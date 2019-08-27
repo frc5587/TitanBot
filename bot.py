@@ -135,6 +135,8 @@ async def math(ctx):
     """
     Solves either a math equation or expression, it can hang if the expression is too complex, e.g. 5587^5587^5587
 
+    Permissions needed: None
+
     :param ctx: context
     :return: None
     """
