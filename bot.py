@@ -3,12 +3,13 @@ from discord.ext import commands
 import random
 import asyncio
 
-from math import math_main
 import event_utils
 import extras
 import checks
 import polls
 import admin
+from math_equ import math_main
+
 
 def read_token():
     """
@@ -131,9 +132,21 @@ async def setup(ctx):
 
 @bot.command(name='Math')
 async def math(ctx):
+    """
+    Solves either a math equation or expression, it can hang if the expression is too complex, e.g. 5587^5587^5587
+
+    :param ctx: context
+    :return: None
+    """
     await ctx.channel.trigger_typing()
     try:
-        await math_main(ctx.message.content)
+        answers, equ = math_main(ctx.message.content)
+        math_embed = discord.Embed(
+            title=equ,
+            color=discord.Color.from_rgb(67, 0, 255),
+            description=''.join(answers)
+        )
+        await ctx.channel.send(content=None, embed=math_embed)
     except Exception as e:
         await ctx.channel.send(f"Well, You did something wrong\n`{e}`")
 

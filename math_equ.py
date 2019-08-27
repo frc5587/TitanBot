@@ -64,4 +64,4 @@ def math_main(user_input):
     set_pieces = organize(user_input)
     simplified_equ = parse_expr(set_pieces[2], transformations=standard_transformations + (implicit_multiplication,))
     answers = solve_equ(set_pieces[1], simplified_equ)
-    return answers
+    return answers, set_pieces[2]
