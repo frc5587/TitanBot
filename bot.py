@@ -26,6 +26,22 @@ token = read_token()
 bot = commands.Bot(command_prefix=['-', './'], case_insensitive=True)
 bot.remove_command("help")
 
+# listing commands for the help command
+
+extras.Commands('Die', 'Kills the bot', '-die', 'Dev')
+extras.Commands('MakePoll', 'Make a reaction style poll, you add in options after you send the -makepoll command', '-makepoll', 'Dev, Admin, FRC Leadership')
+extras.Commands('Events', 'Displays events from the team calendar for today unless specified for how many days', '-events <O: num days>', 'None')
+extras.Commands('Channel', 'Lets you know which channels are subscribed to the auto announcements', '-channel', 'Dev')
+extras.Commands('Setup', 'Starts the auto announcement system', '-setup', 'Dev, Admin, FRC Leadership')
+extras.Commands('Math', "Solves math equations/expressions, use the flag '-v' to specify the variable that you may want to solve for",
+                '-math <expression/equation> O: -v <variable to solve for>', 'None')
+extras.Commands('Test', 'Used to check if bot is running, says "Confirmed" if so', '-test', 'None')
+extras.Commands('SetAlarm', "Sets an alarm to happen at time specified by '-t' (HH:MM, 24 hour clock) and to ping "
+                            "anything specified by '-p', if you want to ping multiple people use '-p' multiple times,"
+                            "\nPlease note 12am, which would be 24:00 is expressed as 00:00, ",
+                '-setalarm -t <HH:MM> -p <@mention>', 'None')
+extras.Commands('Help', "Shows the help box, if you want specific help, do '-help <command>", '-help O: <command>', 'None')
+
 
 # ------------- Start of commands ------------
 
@@ -201,7 +217,7 @@ async def setalarm(ctx):
 
 
 @bot.command(name='help')
-async def help(ctx):
+async def helper(ctx):
     """
     Sends the help embed, can also give specific help of a given command
 
@@ -210,7 +226,10 @@ async def help(ctx):
     :param ctx: context object
     :return: None
     """
-    await extras.helper(ctx)
+    try:
+        await extras.helper(ctx)
+    except Exception as e:
+        print(e)
 
 
 # ---------- End of commands -------------
