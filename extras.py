@@ -10,7 +10,7 @@ class Commands:
     command_str = ""
     command_list_name = []
 
-    def __init__(self, name, description, syntax):
+    def __init__(self, name, description, syntax, permissions):
         """
         Creates the command object (duh) and generates the comma separated string of commands used by the help function
 
@@ -21,6 +21,7 @@ class Commands:
         self.name = name
         self.description = description
         self.syntax = syntax
+        self.permissions = permissions
         Commands.command_list.append(self)
         Commands.command_list_name.append(self.name)
         Commands.command_count += 1
@@ -64,8 +65,8 @@ async def helper(ctx):
     :param ctx: command object
     :return: None
     """
-    if len(ctx.message.content) > 6:
-        help_command = ctx.message.content[6:].lower()
+    if len(ctx.message.content.split()) > 1:
+        help_command = ctx.message.content.split()[1].lower()
         for i in Commands.command_list:
             if help_command == i.name.lower():
                 help_command_embed = discord.Embed(
@@ -73,12 +74,14 @@ async def helper(ctx):
                     description=i.description,
                     color=discord.Color.from_rgb(67, 0, 255)
                 )
-                help_command_embed.add_field(name="Usage", value=i.syntax)
+                help_command_embed.add_field(name="Syntax", value=i.syntax)
+                help_command_embed.add_field(name="Permissions needed", value=f"You need any one of these to use the command\n{i.permissions}")
+                help_command_embed.set_footer(text='O: means that the arg is optional')
                 await ctx.channel.send(content=None, embed=help_command_embed)
                 return
         error_embed = discord.Embed(
             title='Error 404: command not found',
-            description=f'The command {ctx.message.content[6:]} is not found, check -help if that command exist, '
+            description=f'The command {ctx.message.content.split()[1]} is not found, check -help if that command exist, '
             f'if it does then please notify Johnny Wobble#1085 of this',
             color=discord.Color.from_rgb(255, 0, 0)
         )
@@ -86,10 +89,9 @@ async def helper(ctx):
     else:
         embed = discord.Embed(
             title='Help',
-            description='- is the prefix,\ngeneral format: {-<command>  <O: conditional statement(s)>}\n'
-                        'O: means that the arg is optional',
+            description='- is the prefix,\ngeneral format: -<command>  <O: conditional statement(s)>\n',
             color=discord.Color.from_rgb(67, 0, 255)
         )
-        embed.set_footer(text="slick embed, eh?")
+        embed.set_footer(text='O: means that the arg is optional')
         embed.add_field(name="list of commands", value=Commands.command_str, inline=True)
         await ctx.channel.send(content=None, embed=embed)
