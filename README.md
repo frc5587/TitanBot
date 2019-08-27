@@ -1,2 +1,2 @@
 # TitanBot
-The discord bot for titan robotics, FRC 5587
+The discord bot for Titan Robotics, FRC 5587
