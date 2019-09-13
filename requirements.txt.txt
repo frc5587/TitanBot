@@ -1,4 +1,0 @@
-discord.py
-pyjokes
-sympy
---upgrade google-api-python-client
