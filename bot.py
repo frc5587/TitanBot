@@ -272,7 +272,7 @@ async def game_presence():
     :return: None
     """
     await bot.wait_until_ready()
-    games = ["-help for help", "Official bot of FRC 5587"]
+    games = ["-help for help", "Official bot of Team 5587", "when your not looking"]
     while not bot.is_closed():
         try:
             status = random.choice(games)
