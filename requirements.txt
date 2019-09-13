@@ -2,3 +2,4 @@ discord.py
 pyjokes
 sympy
 google-api-python-client
+google_auth_oauthlib
