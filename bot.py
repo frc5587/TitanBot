@@ -143,7 +143,7 @@ async def setup(ctx):
     :param ctx: context object
     :return: None
     """
-    await events.setup(ctx, bot)
+    await event_utils.setup(ctx, bot)
 
 
 @bot.command(name='Math')
