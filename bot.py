@@ -160,7 +160,7 @@ async def math(ctx):
     try:
         answers, equ = math_main(ctx.message.content)
         math_embed = discord.Embed(
-            title=equ,
+            title=f"`{equ}`",
             color=discord.Color.from_rgb(67, 0, 255),
             description=''.join(answers)
         )
