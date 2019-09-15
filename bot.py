@@ -31,7 +31,7 @@ bot.remove_command("help")
 extras.Commands('Die', 'Kills the bot', '-die', 'Dev')
 extras.Commands('MakePoll', 'Make a reaction style poll, you add in options after you send the -makepoll command', '-makepoll', 'Dev, Admin, FRC Leadership')
 extras.Commands('Events', 'Displays events from the team calendar for today unless specified for how many days', '-events <O: num days>', 'None')
-extras.Commands('Channel', 'Lets you know which channels are subscribed to the auto announcements', '-channel', 'Dev')
+extras.Commands('Channels', 'Lets you know which channels are subscribed to the auto announcements', '-channel', 'Dev')
 extras.Commands('Setup', 'Starts the auto announcement system', '-setup', 'Dev, Admin, FRC Leadership')
 extras.Commands('Math', "Solves math equations/expressions, use the flag '-v' to specify the variable that you may want to solve for",
                 '-math <expression/equation> O: -v <variable to solve for>', 'None')
@@ -123,7 +123,7 @@ async def events(ctx):
 
 
 @checks.is_dev()
-@bot.command(name='channel')
+@bot.command(name='channels')
 async def channel_test(ctx):
     """
     Debugging command, sends a message to every channel writen to channels.txt
@@ -133,7 +133,9 @@ async def channel_test(ctx):
     :param ctx: context object
     :return: context object
     """
-    await admin.channels(bot)
+    with open('Xtras/channels.txt', 'r') as f:
+        await ctx.channel.send(f.read())
+    # await admin.channels(bot)
 
 
 @checks.is_admin('FRC Leadership')

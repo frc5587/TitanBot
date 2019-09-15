@@ -10,8 +10,9 @@ async def channels(bot):
     """
     with open('Xtras/channels.txt', 'r') as f:
         channel_list = f.readlines()
-        channel_list.pop(0)
+
     for channel in channel_list:
+
         chan_id = int(channel)
         channel = bot.get_channel(chan_id)
         await channel.send("Is this right?")
