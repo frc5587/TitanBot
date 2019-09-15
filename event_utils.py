@@ -38,7 +38,7 @@ class SetupPoll(PollBaseClass):
                     with open('Xtras/channels.txt', 'w') as f:  # deletes the channel id from text file
                         f.write(channel_str)
 
-                await ctx.channel.send("This channel has now been unsubscribed from the announcements")
+                    await ctx.channel.send("This channel has now been unsubscribed from the announcements")
 
     async def subscribe(self, ctx):
         """
