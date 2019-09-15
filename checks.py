@@ -1,10 +1,11 @@
 import discord
 from discord.ext.commands import check
 
-devs = ['Johnny Wobble#1085', 'Brendan Doney#2365']
+devs = [359794541257162753,  # Max Gordon
+        248914785888894976]  # Brendan Doney
 
 
-async def bad_premissions(ctx, premissions):
+async def bad_permissions(ctx, permissions):
     """
     Error for when people try and use a command that needs permissions that they don't have, send out an embed
 
@@ -12,13 +13,13 @@ async def bad_premissions(ctx, premissions):
     :param premissions: list (str)
     :return: None
     """
-    bad_premissions_embed = discord.Embed(
-        title=f"Missing permission(s): {', '.join(premissions)}",
+    bad_permissions_embed = discord.Embed(
+        title=f"Missing permission(s): {', '.join(permissions)}",
         description="",
         color=discord.Color.from_rgb(255, 0, 0)
     )
-    bad_premissions_embed.set_footer(text="Well... I guess it was worth a try?")
-    await ctx.channel.send(content=None, embed=bad_premissions_embed)
+    bad_permissions_embed.set_footer(text="Well... I guess it was worth a try?")
+    await ctx.channel.send(content=None, embed=bad_permissions_embed)
 
 
 def is_admin(*roles):
@@ -42,8 +43,8 @@ def is_admin(*roles):
         :return:
         """
         if not ctx.message.author.guild_permissions.administrator:
-            await bad_premissions(ctx, [i for i in roles])
-        return ctx.message.author.guild_permissions.administrator or str(ctx.message.author) in devs or\
+            await bad_permissions(ctx, [i for i in roles])
+        return ctx.message.author.guild_permissions.administrator or ctx.message.author.id in devs or\
             any([i.name in [roles] for i in ctx.message.author.roles])
     return check(decorator)
 
@@ -55,8 +56,8 @@ def is_dev():
     :return: bool
     """
     async def decorator(ctx):
-        if str(ctx.message.author) not in devs:
-            await bad_premissions(ctx, ["being a dev"])
-        return str(ctx.message.author) in devs
+        if ctx.message.author.id not in devs:
+            await bad_permissions(ctx, ["being a dev"])
+        return ctx.message.author.id in devs
     return check(decorator)
 

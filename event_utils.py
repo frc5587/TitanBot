@@ -223,7 +223,9 @@ def read_channels():
     """
     with open('Xtras/channels.txt', 'r') as f:  # reads channels.txt
         channels = f.readlines()
-        channels.pop(0)
+        for index, channel in enumerate(channels):
+            if channel == '\n':
+                channels.pop(index)
     return channels
 
 
