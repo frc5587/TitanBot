@@ -63,27 +63,31 @@ async def die(ctx):
 @checks.is_admin('FRC Leadership')
 @bot.command(name='makepoll')
 async def make_poll(ctx):
-    """
-    Makes a poll that assigns a role for reacting and a reaction specific role, it can only be ended by the author of
-    the poll
+    try:
+        """
+        Makes a poll that assigns a role for reacting and a reaction specific role, it can only be ended by the author of
+        the poll
+    
+        permissions needed: Admin, FRC Leadership
+    
+        :param ctx: context
+        :return: None
+        """
+        await ctx.channel.send('Name your poll, then list out the options, one per message, send `done` when you are finished')
 
-    permissions needed: Admin, FRC Leadership
+        def message_check(m):
+            return m.channel == ctx.channel and m.author == ctx.message.author
 
-    :param ctx: context
-    :return: None
-    """
-    await ctx.channel.send('Name your poll, then list out the options, one per message, send `done` when you are finished')
+        msg = await bot.wait_for('message', check=message_check)
+        action_list = await polls.get_roles(bot, ctx, message_check)
+        poll = polls.Poll([emoji for role, emoji in action_list], [role for role, emoji in action_list], msg.author, msg.content)
+        embed, poll = await polls.create_poll_embed(poll)
+        poll.message = await ctx.channel.send(content=None, embed=embed)
+        await poll.add_reactions()
+        await poll.reaction_watch_loop(bot, poll.message)
 
-    def message_check(m):
-        return m.channel == ctx.channel and m.author == ctx.message.author
-
-    msg = await bot.wait_for('message', check=message_check)
-    action_list = await polls.get_roles(bot, ctx, message_check)
-    poll = polls.Poll([emoji for role, emoji in action_list], [role for role, emoji in action_list], msg.author, msg.content)
-    embed, poll = await polls.create_poll_embed(poll)
-    poll.message = await ctx.channel.send(content=None, embed=embed)
-    await poll.add_reactions()
-    await poll.reaction_watch_loop(bot, poll.message)
+    except Exception as E:
+        print(E)
 
 
 @bot.command(name='events')

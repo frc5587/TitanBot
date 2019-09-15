@@ -7,37 +7,104 @@ import discord
 import extras
 import asyncio
 import calendar_api
+from PollBaseClass import PollBaseClass
 
 
 empty_list = []
 
 
+class SetupPoll(PollBaseClass):
+
+    async def unsubscribe(self, ctx):
+        """
+        It removes the channel from channels.txt, if it hasn't been already
+
+        :param ctx: context
+        :return: None
+        """
+        with open('Xtras/channels.txt', 'r') as f:  # reads all current ids on the text file (list)
+            channel_id_list = f.readlines()
+
+        if str(ctx.channel.id) not in channel_id_list:  # checks if channels is already in the list
+            await ctx.channel.send("This channel is not subscribed to the announcements")
+            return
+
+        else:
+            for index, channel_id in enumerate(channel_id_list):
+                if channel_id == str(ctx.channel.id):
+                    channel_id_list.pop(index)
+                    channel_str = '\n'.join(channel_id_list)
+
+                    with open('Xtras/channels.txt', 'w') as f:  # deletes the channel id from text file
+                        f.write(channel_str)
+
+                await ctx.channel.send("This channel has now been unsubscribed from the announcements")
+
+    async def subscribe(self, ctx):
+        """
+        This adds the channel to channels.txt if it isn't on already
+
+        :param ctx: context
+        :return: None
+        """
+        with open('Xtras/channels.txt', 'r') as f:  # reads all current ids on the text file (list)
+            channel_id_list = f.readlines()
+
+        if str(ctx.channel.id) in channel_id_list:  # checks if channels is already in the list
+            await ctx.channel.send("This channel is already subscribed to the announcements")
+            return
+
+        else:
+            with open('Xtras/channels.txt', 'a') as f:  # writes the channels id to text file
+                f.write("\n" + str(ctx.channel.id))
+            await ctx.channel.send("This channel is now subscribed to the announcements")
+
+    async def sub_to_auto_announcements(self, bot, ctx):
+        """
+        Waits for a reaction (either ✅ or ❌) then it acts accordingly, if it is a check it adds it to channels.txt if
+        it isn't on already, if it is the X then it removes it from channels.txt, if it hasn't been already
+
+        :param bot: connection
+        :param ctx: context
+        :return: None
+        """
+        emoji, member = await self.reaction_watch_loop(bot)
+        while member != self.author:
+            emoji, member = await self.reaction_watch_loop(bot)
+        if emoji == '✅':
+            await self.subscribe(ctx)
+
+        else:
+            await self.unsubscribe(ctx)
+
+    async def create_poll_embed(self):
+        """
+        Creates the embed of the poll, collects the role information from the user
+
+        :return: discord.Embed, Poll
+        """
+
+        self.embed = discord.Embed(
+            title=f"**{self.title}**",
+            description=f"Do you want to subscribe (✅) or unsubscribe (❌) from the auto-announcements?",
+            color=discord.Color.from_rgb(67, 0, 255)
+        )
+        self.embed.set_footer(text='React with the corresponding emoji!')
+
+
 async def setup(ctx, bot):  # when this method is completed it with write the channel id to channels.txt
     """
-    A question response dialogue with someone try to set up the auto-announcement system on a channel, when this is
-    completed with a confirmation, it writes the channel id to channels.txt, and stores it for future announcements
+    Uses a reaction poll to determine if the person wants to subscribe or unsubscribe from the announcements
 
     :param ctx: context object
-    :param bot: object that represents the connection to discord
+    :param bot: connection
     :return: None
     """
-    await ctx.channel.send("Do you want this channel to receive announcements? [Y/N]")
-    while True:  # breaks when it receives a message for the right channel
-        msg = await bot.wait_for('message')
-        if msg.channel.id == ctx.channel.id:
-            break
-    msg = msg.content.upper()
-    if msg != 'Y':
-        await ctx.channel.send("Run '-setup' in the channel you want the announcements to be in")
-        return
-    with open('Xtras/channels.txt', 'r') as f:  # reads all current ids on the text file (list)
-        channel_id_list = f.readlines()
-    if str(ctx.channel.id) in channel_id_list:   # checks if channels is already in the list
-        await ctx.channel.send("This channel is already going to get announcements")
-        return
-    with open('Xtras/channels.txt', 'a') as f:  # writes the channels id to text file
-        f.write("\n" + str(ctx.channel.id))
-    await ctx.channel.send("This channel has now been added to the list")
+    setup_poll = SetupPoll(['✅', '❌'], ctx.message.author, 'Auto-announcements')
+    await setup_poll.create_poll_embed()
+    setup_poll.message = await ctx.channel.send(embed=setup_poll.embed, content=None)
+    await setup_poll.add_reactions()
+    await setup_poll.sub_to_auto_announcements(bot, ctx)  # blocking
 
 
 async def alarm(time, content, ctx, pings):  # this gets looped to inside of an event loop

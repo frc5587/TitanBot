@@ -1,8 +1,10 @@
 import discord
 import asyncio
 
+from PollBaseClass import PollBaseClass
 
-class Poll:
+
+class Poll(PollBaseClass):
     model_perms = discord.Permissions(70769729)
 
     def __init__(self, emoji_list, role_list, author, title):
