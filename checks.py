@@ -24,16 +24,17 @@ async def bad_permissions(ctx, permissions):
 
 def is_admin(*roles):
     """
-    Checks if the person is an admin **OR** if they have any of the roles passed through *roles
+    Checks if the person is an admin, dev, **OR** if they have any of the roles passed through *roles
 
     :param roles: list (str)
     :return: bool
     """
+
     roles = list(roles)
-    if roles is None:
-        roles = ["administer"]
+    if roles is None:  # adds administrator so they know what they need on the error message, it does not change the execution
+        roles = ["Administer"]
     else:
-        roles.append("administer")
+        roles.append("Administrator")
 
     async def decorator(ctx):
         """
@@ -42,10 +43,12 @@ def is_admin(*roles):
         :param ctx:
         :return:
         """
-        if not ctx.message.author.guild_permissions.administrator:
+        if not (ctx.message.author.guild_permissions.administrator or ctx.message.author.id in devs or\
+        any([i.name in [roles] for i in ctx.message.author.roles])):  # are not they and admin, dev or have a role in roles
             await bad_permissions(ctx, [i for i in roles])
+
         return ctx.message.author.guild_permissions.administrator or ctx.message.author.id in devs or\
-            any([i.name in [roles] for i in ctx.message.author.roles])
+            any([i.name in [roles] for i in ctx.message.author.roles])  # are they and admin, dev or have a role in roles
     return check(decorator)
 
 
