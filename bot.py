@@ -78,13 +78,14 @@ async def make_poll(ctx):
         def message_check(m):
             return m.channel == ctx.channel and m.author == ctx.message.author
 
-        msg = await bot.wait_for('message', check=message_check)
+        msg = await bot.wait_for('message', check=message_check)  # blocking
+
         action_list = await polls.get_roles(bot, ctx, message_check)
         poll = polls.Poll([emoji for role, emoji in action_list], [role for role, emoji in action_list], msg.author, msg.content)
         embed, poll = await polls.create_poll_embed(poll)
         poll.message = await ctx.channel.send(content=None, embed=embed)
         await poll.add_reactions()
-        await poll.reaction_watch_loop(bot, poll.message)
+        await poll.reaction_watch_loop(bot)
 
     except Exception as E:
         print(E)

@@ -10,7 +10,7 @@ async def bad_permissions(ctx, permissions):
     Error for when people try and use a command that needs permissions that they don't have, send out an embed
 
     :param ctx: context object
-    :param premissions: list (str)
+    :param permissions: list (str)
     :return: None
     """
     bad_permissions_embed = discord.Embed(
@@ -43,8 +43,8 @@ def is_admin(*roles):
         :param ctx:
         :return:
         """
-        if not (ctx.message.author.guild_permissions.administrator or ctx.message.author.id in devs or\
-        any([i.name in [roles] for i in ctx.message.author.roles])):  # are not they and admin, dev or have a role in roles
+        if not (ctx.message.author.guild_permissions.administrator or ctx.message.author.id in devs or
+                any([i.name in [roles] for i in ctx.message.author.roles])):  # are not they and admin, dev or have a role in roles
             await bad_permissions(ctx, [i for i in roles])
 
         return ctx.message.author.guild_permissions.administrator or ctx.message.author.id in devs or\

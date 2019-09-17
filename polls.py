@@ -70,7 +70,7 @@ class Poll(PollBaseClass):
         await self.general_role.delete()
         return self
 
-    async def reaction_watch_loop(self, bot, bot_message):
+    async def reaction_watch_loop(self, bot):
         """
         Loop, when someone reacts to the message it removes all of their other reactions and gives them the
         corresponding role
@@ -79,7 +79,6 @@ class Poll(PollBaseClass):
         :param bot_message: discord.Message
         :return: None
         """
-
 
         def reaction_check(reaction_, user):
             """
@@ -90,17 +89,20 @@ class Poll(PollBaseClass):
             :param user: discord.User
             :return: bool
             """
-            if reaction_.message.id == bot_message.id and user != bot_message.author:  # if valid message and real user
+            if reaction_.message.id == self.message.id and user != self.message.author:  # if valid message and real user
                 loop = asyncio.get_event_loop()
 
                 if str(reaction_.emoji) == '⛔':
                     if user == self.author:
                         return True
 
+                elif str(reaction_.emoji) == '❌':
+                    return True
+
                 elif str(reaction_.emoji) in self.emoji_list:  # if the reaction is one of the choices
                     return True
 
-                loop.run_until_complete(bot_message.remove_reaction(reaction_, user))
+                loop.run_until_complete(self.message.remove_reaction(reaction_, user))
                 loop.close()
             return False
 
@@ -109,17 +111,24 @@ class Poll(PollBaseClass):
             try:
                 reaction, member = await bot.wait_for('reaction_add', check=reaction_check)  # blocking
 
-                if str(reaction.emoji) == '⛔':
+                if str(reaction.emoji) == '⛔':  # ends poll
                     await self.end_poll()
                     return
+
+                elif str(reaction.emoji) == '❌':  # removes all of the users reactions and roles
+                    for emoji, role in self.emoji_role_paired_list:
+                        await member.remove_roles(role)
+                        await self.message.remove_reaction(emoji, member)
+                    await self.message.remove_reaction('❌', member)
+                    await member.remove_roles(self.general_role)
+                    continue
+
                 role, not_roles = self.get_role(str(reaction.emoji))
                 await member.add_roles(role)
                 await member.add_roles(self.general_role)
-                for emoji, role in not_roles:
-                    await member.remove_roles(role)
-                    await bot_message.remove_reaction(emoji, member)
+
             except Exception as e:
-                print(e)
+                print(12, e)
 
     async def add_reactions(self):
         """
@@ -130,8 +139,11 @@ class Poll(PollBaseClass):
         """
         for emoji in self.emoji_list:
             await self.message.add_reaction(emoji)
+        await self.message.add_reaction('❌')
         await self.message.add_reaction('⛔')
+        self.emoji_list.append('❌')
         self.emoji_list.append('⛔')
+
         self.general_role = await self.author.guild.create_role(name=self.title, mentionable=True, permissions=Poll.model_perms)
         return self
 
@@ -154,8 +166,8 @@ async def get_roles(bot, ctx, check):
                 await ctx.channel.send('Ok, poll cancelled')
                 raise ValueError("Poll cancelled")
             break
-        action_list.append([msg.content, emoji_list[0]])
-        emoji_list.pop(0)
+        action_list.append([msg.content, emoji_list.pop(0)])
+
     return action_list
 
 
@@ -170,7 +182,7 @@ async def create_poll_embed(poll):
     poll.make_body_text()
     poll.embed = discord.Embed(
         title=f"**{poll.title}**",
-        description=f"{poll.text}\n⛔ - To end poll (Author only)",
+        description=f"{poll.text}\n❌ - Nevermind (removes reaction roles)\n⛔ - To end poll (Author only)",
         color=discord.Color.from_rgb(67, 0, 255)
     )
     poll.embed.set_footer(text='React with the corresponding emoji!')

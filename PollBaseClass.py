@@ -1,5 +1,4 @@
 import asyncio
-import discord
 
 
 class PollBaseClass:
@@ -27,7 +26,6 @@ class PollBaseClass:
         corresponding role
 
         :param bot: connection to discord
-        :param bot_message: discord.Message
         :return: None
         """
 
@@ -47,7 +45,9 @@ class PollBaseClass:
                 if str(reaction_.emoji) in self.emoji_list:  # if the reaction is one of the choices
                     return True
 
-                loop.run_until_complete(self.message.remove_reaction(reaction_, user))
+                else:
+                    loop.run_until_complete(self.message.remove_reaction(reaction_, user))
+
                 loop.close()
             return False
 
