@@ -133,9 +133,8 @@ async def channel_test(ctx):
     :param ctx: context object
     :return: context object
     """
-    with open('Xtras/channels.txt', 'r') as f:
-        await ctx.channel.send(f.read())
-    # await admin.channels(bot)
+
+    await admin.channels(bot, ctx)
 
 
 @checks.is_admin('FRC Leadership')
