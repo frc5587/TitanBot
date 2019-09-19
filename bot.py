@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import random
 import asyncio
+import ***REMOVED***
 
 import event_utils
 import extras
@@ -185,7 +186,7 @@ async def test(ctx):
     :param ctx: context object
     :return: None
     """
-    await ctx.channel.send("confirmed")
+    await ctx.channel.send(f"Confirmed!\nLocal Time: {***REMOVED***.***REMOVED***.now().strftime('%H:%M:%S')}")
 
 
 @bot.command(name='setalarm')
