@@ -36,7 +36,7 @@ extras.Commands('Channels', 'Lets you know which channels are subscribed to the 
 extras.Commands('Setup', 'Starts the auto announcement system', '-setup', 'Dev, Admin, FRC Leadership')
 extras.Commands('Math', "Solves math equations/expressions, use the flag '-v' to specify the variable that you may want to solve for",
                 '-math <expression/equation> O: -v <variable to solve for>', 'None')
-extras.Commands('Test', 'Used to check if bot is running, says "Confirmed" if so', '-test', 'None')
+extras.Commands('Test', 'Used to check if bot is running, says "Confirmed." if so', '-test', 'None')
 extras.Commands('SetAlarm', "Sets an alarm to happen at time specified by '-t' (HH:MM, 24 hour clock) and to ping "
                             "anything specified by '-p', if you want to ping multiple people use '-p' multiple times,"
                             "\nPlease note 12am, which would be 24:00 is expressed as 00:00, ",
@@ -179,14 +179,14 @@ async def math(ctx):
 @bot.command(name='test')
 async def test(ctx):
     """
-    Confirmation that the bot is up
+    Confirmation that the bot is up, and local time
 
     Permissions needed: None
 
     :param ctx: context object
     :return: None
     """
-    await ctx.channel.send(f"Confirmed!\nLocal Time: {***REMOVED***.***REMOVED***.now().strftime('%H:%M:%S')}")
+    await ctx.channel.send(f"Confirmed.\nLocal Time: {***REMOVED***.***REMOVED***.now().strftime('%H:%M:%S')}")
 
 
 @bot.command(name='setalarm')

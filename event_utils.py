@@ -3,7 +3,6 @@ this file contains any bot command or method that controls the auto-announcement
 """
 import ***REMOVED***
 import discord
-import pytz
 
 import extras
 import asyncio
@@ -244,13 +243,14 @@ async def events_today(ctx=None, yes=False):
 
 def WHAT_TIME_IS_IT(question_mark):
     """
-    Checks if it is 9:30, returns True if it is
+    Checks if it is 9:30, returns True if it is, it is at 13:30 because it runs on a Heroku server that is in a timezone
+    4 hours behind EST
 
     :param question_mark: literally just exists so when its called there is a question mark (str)
     :return: bool
     """
-    return ***REMOVED***.***REMOVED***.strptime('9:30', '%H:%M').time() <= ***REMOVED***.***REMOVED***.now().time() <= \
-        ***REMOVED***.***REMOVED***.strptime('9:36', '%H:%M').time()
+    return ***REMOVED***.***REMOVED***.strptime('13:30', '%H:%M').time() <= ***REMOVED***.***REMOVED***.now().time() <= \
+        ***REMOVED***.***REMOVED***.strptime('13:36', '%H:%M').time()
 
 
 async def manage_events(channels, bot, today=False):
