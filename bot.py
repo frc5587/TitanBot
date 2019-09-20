@@ -89,7 +89,7 @@ async def make_poll(ctx):
         await poll.reaction_watch_loop(bot)
 
     except Exception as E:
-        print(E)
+        await ctx.channel.send(E)
 
 
 @bot.command(name='events')
