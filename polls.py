@@ -5,7 +5,7 @@ from PollBaseClass import PollBaseClass
 
 
 class Poll(PollBaseClass):
-    model_perms = discord.Permissions(70769729)
+    model_perms = discord.Permissions(0)
 
     def __init__(self, emoji_list, role_list, author, title):
         self.emoji_list = emoji_list
