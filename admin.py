@@ -10,6 +10,7 @@ async def channels(bot, ctx):
     """
     with open('Xtras/channels.txt', 'r') as f:
         channel_list = f.readlines()
+        static = channel_list
     with open('Xtras/channels.txt', 'w') as f:
         write_line = []
         for line in channel_list:
@@ -21,3 +22,4 @@ async def channels(bot, ctx):
         channel_ = bot.get_channel(int(channel))
         chan_lst.append(f"#{str(channel_)} ({channel_.id})")
     await ctx.channel.send('\n'.join(chan_lst))
+    await ctx.channel.send(static)
