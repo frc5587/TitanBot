@@ -58,6 +58,7 @@ async def die(ctx):
     :param ctx: context object
     :return: None
     """
+    await ctx.channel.send('Ok, bye bye')
     raise SystemExit("Used command '-die'")
 
 
