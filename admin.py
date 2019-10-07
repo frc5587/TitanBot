@@ -32,3 +32,4 @@ async def channels(bot, ctx):
         channel_ = bot.get_channel(int(channel))
         chan_lst.append(f"#{str(channel_)} ({channel_.id})")
     await ctx.channel.send('\n'.join(chan_lst))
+
