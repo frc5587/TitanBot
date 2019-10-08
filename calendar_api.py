@@ -1,7 +1,6 @@
 """
 this handles all interactions the google calendar api, and sorting the events that follow
 """
-from __future__ import print_function
 import ***REMOVED***
 import pickle
 import os.path
@@ -36,7 +35,7 @@ def setup():
     # The file token.pickle stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
-    if os.path.exists('Xtras/token.pickle'):
+    if os.path.exists('token.pickle'):
         with open('Xtras/token.pickle', 'rb') as token:
             creds = pickle.load(token)
     # If there are no (valid) credentials available, let the user log in.
@@ -57,8 +56,8 @@ def setup():
 
 def call_api(service):  # Call the Calendar API
     """
-    Calls the calendar api, iterates throught the calendars, and gets the events. It gets the date, name, and time of
-    the events, and goes through a ridiculous amount of ".get()"s (thanks google)
+    Calls the calendar api, iterates thought the calendars, and gets the events. It gets the date, name, and time of
+    the events, and goes through a ridiculous amount of ".get()"s (thanks google!)
 
     :param service: build object
     :return: list, dict
@@ -79,9 +78,8 @@ def call_api(service):  # Call the Calendar API
                                     'real_event': event.get('summary'),
                                     'time': None})
             else:
-                event_list2.append({'date': ***REMOVED***.***REMOVED***.strptime(event.get('start').get('dateTime')[:10], '%Y-%m-%d').strftime("%m-%d-%Y"),  # just appends all of the important data
-                                    'day': date_finder(***REMOVED***.***REMOVED***.strptime(event.get('start').get('dateTime')[:10],
-                                                                                  '%Y-%m-%d').weekday()),
+                event_list2.append({'date': ***REMOVED***.***REMOVED***.strptime(event.get('start').get('dateTime')[:10], '%Y-%m-%d').strftime("%m/%d/%Y"),  # just appends all of the important data
+                                    'day': date_finder(***REMOVED***.***REMOVED***.strptime(event.get('start').get('dateTime')[:10], '%Y-%m-%d').weekday()),
                                     'real_event': event.get('summary'),
                                     'start': event.get('start').get('dateTime')[11:16],
                                     'end': event.get('end').get('dateTime')[11:16]})
@@ -109,6 +107,6 @@ def main(days, today):
                 final_events.append(event)
         else:
             if ***REMOVED***.***REMOVED***.strptime(event.get('date'), '%m-%d-%Y').date() <= \
-                    ***REMOVED***.***REMOVED***.today().date() + ***REMOVED***.timedelta(days=days):  # checks if event is within the days param
+                    ***REMOVED***.***REMOVED***.today().date() + ***REMOVED***.timedelta(days=days):   # checks if event is within the days param
                 final_events.append(event)
     return final_events

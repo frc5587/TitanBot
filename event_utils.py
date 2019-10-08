@@ -162,10 +162,10 @@ def create_event_embed(today_bool, yes_bool, num_days=None):
     """
     Creates the correct embed depending on the values for today_bool and yes_bool
 
-    today_bool and yes_bool: embed for today only with events
+    today_bool and yes_bool: embed for today with events
     today_bool and not yes_bool: embed for today without events
     not today_bool and yes_bool: embed for more then one day containing events
-    not today_bool and not yes_bool: embed for more then one day, with out events
+    not today_bool and not yes_bool: embed for more then one day, without events
 
     :param today_bool: bool
     :param yes_bool: bool
@@ -174,7 +174,7 @@ def create_event_embed(today_bool, yes_bool, num_days=None):
     """
     if yes_bool and today_bool:
         embed = discord.Embed(
-            title="List of upcoming events",
+            title="Upcoming events",
             description=f"These are the events today",
             color=discord.Color.from_rgb(67, 0, 255))
     elif today_bool and not yes_bool:
@@ -183,8 +183,8 @@ def create_event_embed(today_bool, yes_bool, num_days=None):
             color=discord.Color.from_rgb(67, 0, 255))
     elif not today_bool and yes_bool:
         embed = discord.Embed(
-            title="List of upcoming events",
-            description=f"These are the events happening in the next {num_days} day(s)",
+            title="Upcoming events",
+            description=f"These are the events in the next {num_days} day(s)",
             color=discord.Color.from_rgb(67, 0, 255))
     else:
         embed = discord.Embed(
@@ -237,11 +237,11 @@ async def events_today(ctx=None, yes=False):
             return no_events, None
         await ctx.channel.send(content=None, embed=no_events)
         raise ValueError
-    event_embed = create_event_embed(False, True)
+    event_embed = create_event_embed(True, True)
     return event_embed, event_list
 
 
-def WHAT_TIME_IS_IT(question_mark):
+def WHAT_TIME_IS_IT(question_mark: str) -> bool:
     """
     Checks if it is 9:30, returns True if it is, it is at 13:30 because it runs on a Heroku server that is in a timezone
     4 hours behind EST
@@ -253,7 +253,7 @@ def WHAT_TIME_IS_IT(question_mark):
         ***REMOVED***.***REMOVED***.strptime('13:36', '%H:%M').time()
 
 
-async def manage_events(channels, bot, today=False):
+async def manage_events(channels, bot, today):
     """
     Gets basic embed then either appends the events to it and sends it or sends an empty one saying that there are no
     events happening, it then iterates through all of the channels, creating the channel object from the channel ids and
@@ -269,14 +269,14 @@ async def manage_events(channels, bot, today=False):
     else:  # gets events for the next week
         event_embed, event_list = await events_by_day(days='7', yes=True)
     if event_list is not None:  # if the event_list is None it will just send the embed saying that there are no events
-        for i in range(len(event_list)):  # iteratively adds events to embed
-            if event_list[i].get('end') is None:  # for events without a time
-                event_embed.add_field(name=event_list[i].get('date'), value=event_list[i].get('real_event'),
+        for event in event_list:  # iteratively adds events to embed
+            if event.get('end') is None:  # for events without a time
+                event_embed.add_field(name=event.get('date'), value=event.get('real_event'),
                                       inline=False)
             else:  # for events with a time
-                event_embed.add_field(name=event_list[i].get('date'),
-                                      value=f"{event_list[i].get('real_event')}\nGoing from "
-                                      f"{event_list[i].get('start')} until {event_list[i].get('end')}",
+                event_embed.add_field(name=event.get('date'),
+                                      value=f"{event.get('real_event')}\nGoing from "
+                                      f"{event.get('start')} until {event.get('end')}",
                                       inline=False)
     for channel in channels:
         channel = bot.get_channel(int(channel))
@@ -314,7 +314,7 @@ async def auto_announcements(bot):
             this_day = ***REMOVED***.***REMOVED***.today().weekday()
             channels = read_channels()  # reads channel ids
             if ***REMOVED***.***REMOVED***.today().weekday() == 6 and this_day != last_day:  # if it is sunday and it hasn't already sent a message
-                await manage_events(channels, bot)
+                await manage_events(channels, bot, today=False)
                 last_day = this_day
                 await asyncio.sleep(9999)
             elif this_day != last_day:  # if it is not sunday and hasn't alread sent a message
