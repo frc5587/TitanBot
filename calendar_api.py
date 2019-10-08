@@ -35,7 +35,7 @@ def setup():
     # The file token.pickle stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
-    if os.path.exists('token.pickle'):
+    if os.path.exists('Xtras/token.pickle'):
         with open('Xtras/token.pickle', 'rb') as token:
             creds = pickle.load(token)
     # If there are no (valid) credentials available, let the user log in.
@@ -47,7 +47,7 @@ def setup():
                 'Xtras/credentials.json', SCOPES)
             creds = flow.run_local_server()
         # Save the credentials for the next run
-        with open('Xtras/token.pickle', 'wb') as token:
+        with open('Xtras/token.pickle', 'wb+') as token:
             pickle.dump(creds, token)
 
     service = build('calendar', 'v3', credentials=creds)
@@ -72,9 +72,8 @@ def call_api(service):  # Call the Calendar API
         events = events_result.get('items', [])  # get events in the calendar
         for event in events:
             if event.get('start').get('date') is not None:
-                event_list2.append({'date': ***REMOVED***.***REMOVED***.strptime(event.get('start').get('date'), '%Y-%m-%d').strftime("%m-%d-%Y"),  # just appends all of the important data
-                                    'day': date_finder(***REMOVED***.***REMOVED***.strptime(event.get('start').get('date'),
-                                                                                  '%Y-%m-%d').weekday()),
+                event_list2.append({'date': ***REMOVED***.***REMOVED***.strptime(event.get('start').get('date'), '%Y-%m-%d').strftime("%m/%d/%Y"),  # just appends all of the important data
+                                    'day': date_finder(***REMOVED***.***REMOVED***.strptime(event.get('start').get('date'), '%Y-%m-%d').weekday()),
                                     'real_event': event.get('summary'),
                                     'time': None})
             else:
@@ -95,18 +94,21 @@ def main(days, today):
     :param today: bool
     :return: list
     """
-    service = setup()  # sets up google api service
-    event_dict, events = call_api(service)  # returns organized nested dicts
-    if not events:
-        return False
-    event_dict.sort(key=lambda x: ***REMOVED***.***REMOVED***.strptime(x['date'], "%m-%d-%Y"))  # sorts events by date
-    final_events = []
-    for event in event_dict:
-        if today:
-            if ***REMOVED***.***REMOVED***.strptime(event.get('date'), "%m-%d-%Y").date() == ***REMOVED***.***REMOVED***.today().date():  # checks if event is happening today (EST)
-                final_events.append(event)
-        else:
-            if ***REMOVED***.***REMOVED***.strptime(event.get('date'), '%m-%d-%Y').date() <= \
-                    ***REMOVED***.***REMOVED***.today().date() + ***REMOVED***.timedelta(days=days):   # checks if event is within the days param
-                final_events.append(event)
-    return final_events
+    try:
+        service = setup()  # sets up google api service
+        event_dict, events = call_api(service)  # returns organized nested dicts
+        if not events:
+            return False
+        event_dict.sort(key=lambda x: ***REMOVED***.***REMOVED***.strptime(x['date'], "%m/%d/%Y"))  # sorts events by date
+        final_events = []
+        for event in event_dict:
+            if today:
+                if ***REMOVED***.***REMOVED***.strptime(event.get('date'), "%m/%d/%Y").date() == ***REMOVED***.***REMOVED***.today().date():  # checks if event is happening today (EST)
+                    final_events.append(event)
+            else:
+                if ***REMOVED***.***REMOVED***.strptime(event.get('date'), '%m/%d/%Y').date() <= \
+                        ***REMOVED***.***REMOVED***.today().date() + ***REMOVED***.timedelta(days=days):   # checks if event is within the days param
+                    final_events.append(event)
+        return final_events
+    except Exception as EE:
+        print(EE)
