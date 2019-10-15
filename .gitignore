@@ -146,8 +146,11 @@ dmypy.json
 .AppleDouble
 .LSOverride
 
-# Tokens
-token*
-credentials*
-google-token*
-discord-token*
+# Sensitive files
+token.txt
+token.pickle
+credentials.json
+channels.txt
+
+calendar-credentials.*
+discord-token.*
