@@ -140,3 +140,14 @@ dmypy.json
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
 *.iws
+
+# OS-specific
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Tokens
+token*
+credentials*
+google-token*
+discord-token*

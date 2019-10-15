@@ -1,7 +1,7 @@
 """
 this file contains any bot command or method that controls the auto-announcements and the alarm logic
 """
-import ***REMOVED***
+import datetime
 import discord
 
 import extras
@@ -112,7 +112,7 @@ async def alarm(time, content, ctx, pings):  # this gets looped to inside of an 
     This method is called instide of a loop, and it will continue to loop until the destination time is reached, then it
     will send out the alarm message (embed) and stop
 
-    :param time: ***REMOVED***.time object
+    :param time: datetime.time object
     :param content: str, content of message
     :param ctx: context object
     :param pings: str, comma separated list of pings
@@ -120,7 +120,7 @@ async def alarm(time, content, ctx, pings):  # this gets looped to inside of an 
     """
     await ctx.channel.send("Alarm set!")
     while True:
-        if time <= ***REMOVED***.***REMOVED***.now().time() <= ***REMOVED***.time(time.hour, time.minute+5, time.second, time.microsecond):  # checks if time is within 5 secs of scheduled time
+        if time <= datetime.datetime.now().time() <= datetime.time(time.hour, time.minute+5, time.second, time.microsecond):  # checks if time is within 5 secs of scheduled time
             break
         else:
             await asyncio.sleep(30)
@@ -137,12 +137,12 @@ async def check_for_errors(ctx, time, pings):
     """
     This take all of the args given by the human on discord and checks them for errors, if there is and error it calls
     the command_error method to notify the human what they have messed up, if it succeds then this wil take the time str
-    and convert it to a ***REMOVED***.time object the parent method continues on normally
+    and convert it to a datetime.time object the parent method continues on normally
 
     :param ctx: context object
     :param time: str
     :param pings: str, comma separated list of pings
-    :return: ***REMOVED***.time, pings (str)
+    :return: datetime.time, pings (str)
     """
     if time is None:
         await extras.command_error(ctx, '505', "Missing arg '-t'", missing_args='-t')
@@ -151,7 +151,7 @@ async def check_for_errors(ctx, time, pings):
         await extras.command_error(ctx, '505', "Missing arg '-p'", missing_args='-p')
         return
     try:
-        time = ***REMOVED***.***REMOVED***.strptime(time, "%H:%M").time()
+        time = datetime.datetime.strptime(time, "%H:%M").time()
     except TypeError:
         await extras.command_error(ctx, '707', "Bad input, '-t' arg must be in format: HH:MM")
         return
@@ -249,8 +249,8 @@ def WHAT_TIME_IS_IT(question_mark: str) -> bool:
     :param question_mark: literally just exists so when its called there is a question mark (str)
     :return: bool
     """
-    return ***REMOVED***.***REMOVED***.strptime('13:30', '%H:%M').time() <= ***REMOVED***.***REMOVED***.now().time() <= \
-        ***REMOVED***.***REMOVED***.strptime('13:36', '%H:%M').time()
+    return datetime.datetime.strptime('13:30', '%H:%M').time() <= datetime.datetime.now().time() <= \
+        datetime.datetime.strptime('13:36', '%H:%M').time()
 
 
 async def manage_events(channels, bot, today):
@@ -306,14 +306,14 @@ async def auto_announcements(bot):
     :param bot: connection to discord
     :return: None (just loops)
     """
-    last_day = ***REMOVED***.***REMOVED***.today() + ***REMOVED***.timedelta(days=-1)  # creates a variable representing yesterday
+    last_day = datetime.datetime.today() + datetime.timedelta(days=-1)  # creates a variable representing yesterday
     last_day = last_day.weekday()
     await bot.wait_until_ready()
     while not bot.is_closed():  # loops as long as the bot is connected to discord
         if WHAT_TIME_IS_IT('?'):  # True if it is 9:30
-            this_day = ***REMOVED***.***REMOVED***.today().weekday()
+            this_day = datetime.datetime.today().weekday()
             channels = read_channels()  # reads channel ids
-            if ***REMOVED***.***REMOVED***.today().weekday() == 6 and this_day != last_day:  # if it is sunday and it hasn't already sent a message
+            if datetime.datetime.today().weekday() == 6 and this_day != last_day:  # if it is sunday and it hasn't already sent a message
                 await manage_events(channels, bot, today=False)
                 last_day = this_day
                 await asyncio.sleep(9999)
