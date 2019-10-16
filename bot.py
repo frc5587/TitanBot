@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import random
 import asyncio
-import ***REMOVED***
+import datetime
 
 import event_utils
 import extras
@@ -18,7 +18,7 @@ def read_token():
 
     :return: str
     """
-    with open("Xtras/token.txt", "r") as f:
+    with open("tokens/discord-token.txt", "r") as f:
         lines = f.readlines()
         return lines[0].strip()
 
@@ -69,9 +69,9 @@ async def make_poll(ctx):
         """
         Makes a poll that assigns a role for reacting and a reaction specific role, it can only be ended by the author of
         the poll
-    
+
         permissions needed: Admin, FRC Leadership
-    
+
         :param ctx: context
         :return: None
         """
@@ -187,7 +187,7 @@ async def test(ctx):
     :param ctx: context object
     :return: None
     """
-    await ctx.channel.send(f"Confirmed.\nLocal Time: {***REMOVED***.***REMOVED***.now().strftime('%H:%M:%S')}")
+    await ctx.channel.send(f"Confirmed.\nLocal Time: {datetime.datetime.now().strftime('%H:%M:%S')}")
 
 
 @bot.command(name='setalarm')

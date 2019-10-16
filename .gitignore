@@ -140,3 +140,19 @@ dmypy.json
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
 *.iws
+
+# OS-specific
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Sensitive files
+token.*
+credentials.json
+
+calendar-credentials.*
+calendar-token.*
+discord-token.*
+
+# Cache files
+cache/
