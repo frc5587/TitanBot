@@ -7,9 +7,8 @@ def clear():
 
     :return: list (str)
     """
-    with open('Xtras/channels.txt', 'r') as f:
+    with open('cache/channels.txt', 'rw') as f:
         lines = f.read()
-    with open('Xtras/channels.txt', 'w') as f:
         lines_list = lines.split('\n')
         final_list = []
         for line in lines_list:
@@ -32,4 +31,3 @@ async def channels(bot, ctx):
         channel_ = bot.get_channel(int(channel))
         chan_lst.append(f"#{str(channel_)} ({channel_.id})")
     await ctx.channel.send('\n'.join(chan_lst))
-

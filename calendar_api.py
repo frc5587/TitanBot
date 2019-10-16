@@ -35,8 +35,8 @@ def setup():
     # The file token.pickle stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
-    if os.path.exists('Xtras/token.pickle'):
-        with open('Xtras/token.pickle', 'rb') as token:
+    if os.path.exists('tokens/calendar-token.pickle'):
+        with open('tokens/calendar-token.pickle', 'rb') as token:
             creds = pickle.load(token)
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
@@ -44,10 +44,10 @@ def setup():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'Xtras/credentials.json', SCOPES)
+                'tokens/calendar-credentials.json', SCOPES)
             creds = flow.run_local_server()
         # Save the credentials for the next run
-        with open('Xtras/token.pickle', 'wb+') as token:
+        with open('tokens/calendar-token.pickle', 'wb+') as token:
             pickle.dump(creds, token)
 
     service = build('calendar', 'v3', credentials=creds)

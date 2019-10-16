@@ -147,10 +147,12 @@ dmypy.json
 .LSOverride
 
 # Sensitive files
-token.txt
-token.pickle
+token.*
 credentials.json
-channels.txt
 
 calendar-credentials.*
+calendar-token.*
 discord-token.*
+
+# Cache files
+cache/

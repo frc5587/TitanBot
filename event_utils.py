@@ -22,7 +22,7 @@ class SetupPoll(PollBaseClass):
         :param ctx: context
         :return: None
         """
-        with open('Xtras/channels.txt', 'r') as f:  # reads all current ids on the text file (list)
+        with open('cache/channels.txt', 'r') as f:  # reads all current ids on the text file (list)
             channel_id_list = f.readlines()
 
         if str(ctx.channel.id) not in channel_id_list:  # checks if channels is already in the list
@@ -35,7 +35,7 @@ class SetupPoll(PollBaseClass):
                     channel_id_list.pop(index)
                     channel_str = '\n'.join(channel_id_list)
 
-                    with open('Xtras/channels.txt', 'w') as f:  # deletes the channel id from text file
+                    with open('cache/channels.txt', 'w') as f:  # deletes the channel id from text file
                         f.write(channel_str)
 
                     await ctx.channel.send("This channel has now been unsubscribed from the announcements")
@@ -47,7 +47,7 @@ class SetupPoll(PollBaseClass):
         :param ctx: context
         :return: None
         """
-        with open('Xtras/channels.txt', 'r') as f:  # reads all current ids on the text file (list)
+        with open('cache/channels.txt', 'r') as f:  # reads all current ids on the text file (list)
             channel_id_list = f.readlines()
 
         if str(ctx.channel.id) in channel_id_list:  # checks if channels is already in the list
@@ -55,7 +55,7 @@ class SetupPoll(PollBaseClass):
             return
 
         else:
-            with open('Xtras/channels.txt', 'a') as f:  # writes the channels id to text file
+            with open('cache/channels.txt', 'a') as f:  # writes the channels id to text file
                 f.write("\n" + str(ctx.channel.id))
             await ctx.channel.send("This channel is now subscribed to the announcements")
 
@@ -289,7 +289,7 @@ def read_channels():
 
     :return: list (str)
     """
-    with open('Xtras/channels.txt', 'r') as f:  # reads channels.txt
+    with open('cache/channels.txt', 'r') as f:  # reads channels.txt
         channels = f.readlines()
         for index, channel in enumerate(channels):
             if channel == '\n':

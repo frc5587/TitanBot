@@ -18,7 +18,7 @@ def read_token():
 
     :return: str
     """
-    with open("Xtras/token.txt", "r") as f:
+    with open("tokens/discord-token.txt", "r") as f:
         lines = f.readlines()
         return lines[0].strip()
 
@@ -69,9 +69,9 @@ async def make_poll(ctx):
         """
         Makes a poll that assigns a role for reacting and a reaction specific role, it can only be ended by the author of
         the poll
-    
+
         permissions needed: Admin, FRC Leadership
-    
+
         :param ctx: context
         :return: None
         """
