@@ -153,6 +153,7 @@ credentials.json
 calendar-credentials.*
 calendar-token.*
 discord-token.*
+!*.gpg
 
 # Cache files
 cache/
