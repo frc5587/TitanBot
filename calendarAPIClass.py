@@ -59,4 +59,3 @@ class CalendarAPI:
                                                   orderBy='startTime').execute()
             self.calendars.append(EventCalendar(calendar, self.service).organize())
         return self
-

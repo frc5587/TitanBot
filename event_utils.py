@@ -3,93 +3,14 @@ this file contains any bot command or method that controls the auto-announcement
 """
 import datetime
 import discord
+import asyncio
 
 import extras
-import asyncio
 import calendar_api
-from PollBaseClass import PollBaseClass
+from setupPollClass import SetupPoll
 
 
 empty_list = []
-
-
-class SetupPoll(PollBaseClass):
-
-    async def unsubscribe(self, ctx):
-        """
-        It removes the channel from channels.txt, if it hasn't been already
-
-        :param ctx: context
-        :return: None
-        """
-        with open('cache/channels.txt', 'r') as f:  # reads all current ids on the text file (list)
-            channel_id_list = f.readlines()
-
-        if str(ctx.channel.id) not in channel_id_list:  # checks if channels is already in the list
-            await ctx.channel.send("This channel is not subscribed to the announcements")
-            return
-
-        else:
-            for index, channel_id in enumerate(channel_id_list):
-                if channel_id == str(ctx.channel.id):
-                    channel_id_list.pop(index)
-                    channel_str = '\n'.join(channel_id_list)
-
-                    with open('cache/channels.txt', 'w') as f:  # deletes the channel id from text file
-                        f.write(channel_str)
-
-                    await ctx.channel.send("This channel has now been unsubscribed from the announcements")
-
-    async def subscribe(self, ctx):
-        """
-        This adds the channel to channels.txt if it isn't on already
-
-        :param ctx: context
-        :return: None
-        """
-        with open('cache/channels.txt', 'r') as f:  # reads all current ids on the text file (list)
-            channel_id_list = f.readlines()
-
-        if str(ctx.channel.id) in channel_id_list:  # checks if channels is already in the list
-            await ctx.channel.send("This channel is already subscribed to the announcements")
-            return
-
-        else:
-            with open('cache/channels.txt', 'a') as f:  # writes the channels id to text file
-                f.write("\n" + str(ctx.channel.id))
-            await ctx.channel.send("This channel is now subscribed to the announcements")
-
-    async def sub_to_auto_announcements(self, bot, ctx):
-        """
-        Waits for a reaction (either ✅ or ❌) then it acts accordingly, if it is a check it adds it to channels.txt if
-        it isn't on already, if it is the X then it removes it from channels.txt, if it hasn't been already
-
-        :param bot: connection
-        :param ctx: context
-        :return: None
-        """
-        emoji, member = await self.reaction_watch_loop(bot)
-        while member != self.author:
-            emoji, member = await self.reaction_watch_loop(bot)
-        if emoji == '✅':
-            await self.subscribe(ctx)
-
-        else:
-            await self.unsubscribe(ctx)
-
-    async def create_poll_embed(self):
-        """
-        Creates the embed of the poll, collects the role information from the user
-
-        :return: discord.Embed, Poll
-        """
-
-        self.embed = discord.Embed(
-            title=f"**{self.title}**",
-            description=f"Do you want to subscribe (✅) or unsubscribe (❌) from the auto-announcements?",
-            color=discord.Color.from_rgb(67, 0, 255)
-        )
-        self.embed.set_footer(text='React with the corresponding emoji!')
 
 
 async def setup(ctx, bot):  # when this method is completed it with write the channel id to channels.txt
@@ -158,42 +79,42 @@ async def check_for_errors(ctx, time, pings):
     return time, pings
 
 
-def create_event_embed(today_bool, yes_bool, num_days=None):
+def create_event_embed(is_today: bool, events_exist: bool, num_days: int = None) -> discord.Embed:
     """
-    Creates the correct embed depending on the values for today_bool and yes_bool
+    Creates the correct embed depending on the values for is_today and events_exist
 
-    today_bool and yes_bool: embed for today with events
-    today_bool and not yes_bool: embed for today without events
-    not today_bool and yes_bool: embed for more then one day containing events
-    not today_bool and not yes_bool: embed for more then one day, without events
+    is_today and events_exist: embed for is_today with events
+    is_today and not events_exist: embed for is_today without events
+    not is_today and events_exist: embed for more then one day containing events
+    not is_today and not events_exist: embed for more then one day, without events
 
-    :param today_bool: bool
-    :param yes_bool: bool
+    :param is_today: bool
+    :param events_exist: bool
     :param num_days: int
     :return: embed
     """
-    if yes_bool and today_bool:
+    if events_exist and is_today:
         embed = discord.Embed(
             title="Upcoming events",
-            description=f"These are the events today",
+            description=f"Events happening today",
             color=discord.Color.from_rgb(67, 0, 255))
-    elif today_bool and not yes_bool:
+    elif is_today and not events_exist:
         embed = discord.Embed(
-            title=f'There are no events today',
+            title=f'There are no events happening today',
             color=discord.Color.from_rgb(67, 0, 255))
-    elif not today_bool and yes_bool:
+    elif not is_today and events_exist:
         embed = discord.Embed(
             title="Upcoming events",
-            description=f"These are the events in the next {num_days} day(s)",
+            description=f"Events happening through {f'the next {num_days} days' if num_days != 1 else 'tomorrow'}",
             color=discord.Color.from_rgb(67, 0, 255))
     else:
         embed = discord.Embed(
-            title=f'There are no events in the next {num_days} day(s)',
+            title=f"There are no events happening through {f'the next {num_days} days' if num_days != 1 else 'tomorrow'}",
             color=discord.Color.from_rgb(67, 0, 255))
     return embed
 
 
-async def events_by_day(days=None, ctx=None, yes=False):
+async def events_by_day(days: str = None, ctx=None, events_exist: bool = False):
     """
     This creates an embed for any amount of days, and then returns it to the parent method to have the actual events
     added in, it raises a ValueError as a shortcut back, it also generates the list of events that the parent method
@@ -201,16 +122,16 @@ async def events_by_day(days=None, ctx=None, yes=False):
 
     :param days: str
     :param ctx: context
-    :param yes: bool
+    :param events_exist: bool
     :return: discord.Embed, list
     """
     if ctx is not None:
         days = ctx.message.content.split()[1]
     if days.isdigit():
-        event_list = calendar_api.main(int(days), False)
+        event_list = calendar_api.main(int(days))
         if event_list == empty_list:
             no_events = create_event_embed(False, False, num_days=days)
-            if yes:
+            if events_exist:
                 return no_events, None
             await ctx.channel.send(content=None, embed=no_events)
             raise ValueError
@@ -220,20 +141,20 @@ async def events_by_day(days=None, ctx=None, yes=False):
     raise ValueError
 
 
-async def events_today(ctx=None, yes=False):
+async def events_today(ctx=None, events_exist: bool =False):
     """
     This creates an embed for only events happening today, and then returns it to the parent method to have the actual
     events added in, it raises a ValueError as a shortcut back, it also generates the list of events that the parent
     method will add to the embed
 
-    :param yes: bool, whether it is called from auto-announcements
+    :param events_exist: bool, whether it is called from auto-announcements
     :param ctx: context object
     :return: discord.Embed, list
     """
-    event_list = calendar_api.main(1, True)
+    event_list = calendar_api.main(0)
     if event_list == empty_list:
         no_events = create_event_embed(True, False)
-        if yes:
+        if events_exist:
             return no_events, None
         await ctx.channel.send(content=None, embed=no_events)
         raise ValueError
@@ -265,18 +186,20 @@ async def manage_events(channels, bot, today):
     :return: None
     """
     if today:  # get events for today
-        event_embed, event_list = await events_today(yes=True)
+        event_embed, event_list = await events_today(events_exist=True)
     else:  # gets events for the next week
-        event_embed, event_list = await events_by_day(days='7', yes=True)
+        event_embed, event_list = await events_by_day(days='7', events_exist=True)
     if event_list is not None:  # if the event_list is None it will just send the embed saying that there are no events
         for event in event_list:  # iteratively adds events to embed
-            if event.get('end') is None:  # for events without a time
-                event_embed.add_field(name=event.get('date'), value=event.get('real_event'),
+            if event.start_time is None:  # for events without a time
+                event_embed.add_field(name=event.date.strftime("%A (%m/%d/%y)"),
+                                      value=f"{event.title}\n{event.description}",
                                       inline=False)
             else:  # for events with a time
-                event_embed.add_field(name=event.get('date'),
-                                      value=f"{event.get('real_event')}\nGoing from "
-                                      f"{event.get('start')} until {event.get('end')}",
+                event_embed.add_field(name=event.date.strftime("%A (%m/%d/%y)"),
+                                      value=f"{event.title}\n{event.description}"
+                                            f"\t*{event.start_time.strftime('%I:%M %p')} till "
+                                            f"{event.end_time.strftime('%I:%M %p')}*",
                                       inline=False)
     for channel in channels:
         channel = bot.get_channel(int(channel))

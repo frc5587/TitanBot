@@ -107,22 +107,34 @@ async def events(ctx):
     await ctx.channel.trigger_typing()
     try:
         if len(ctx.message.content) >= 9:
-            event_embed, event_dict = await event_utils.events_by_day(ctx=ctx)
+            event_embed, event_list = await event_utils.events_by_day(ctx=ctx)
         else:
-            event_embed, event_dict = await event_utils.events_today(ctx=ctx)
+            event_embed, event_list = await event_utils.events_today(ctx=ctx)
     except ValueError:
         return
-    for i in range(len(event_dict)):
-        if event_dict[i].get('end') is None:
-            event_embed.add_field(name=f"{event_dict[i].get('day')} - {event_dict[i].get('date')}",
-                                  value=event_dict[i].get('real_event'),
+    for event in event_list:  # iteratively adds events to embed
+        if event.start_time is None:  # for events without a time
+            event_embed.add_field(name=event.date.strftime("%A (%m/%d/%y)"),
+                                  value=f"{event.title}\n{event.description}",
                                   inline=False)
-        else:
-            event_embed.add_field(name=f"{event_dict[i].get('day')} - {event_dict[i].get('date')}",
-                                  value=f"{event_dict[i].get('real_event')}\nGoing from "
-                                  f"{event_dict[i].get('start')} until {event_dict[i].get('end')}",
+        else:  # for events with a time
+            event_embed.add_field(name=event.date.strftime("%A (%m/%d/%y)"),
+                                  value=f"{event.title}\n{event.description}"
+                                        f"\t*{event.start_time.strftime('%I:%M %p')} till "
+                                        f"{event.end_time.strftime('%I:%M %p')}*",
                                   inline=False)
-    await ctx.channel.send(content=None, embed=event_embed)
+        await ctx.channel.send(content=None, embed=event_embed)
+    # for i in range(len(event_dict)):
+    #     if event_dict[i].get('end') is None:
+    #         event_embed.add_field(name=f"{event_dict[i].get('day')} - {event_dict[i].get('date')}",
+    #                               value=event_dict[i].get('real_event'),
+    #                               inline=False)
+    #     else:
+    #         event_embed.add_field(name=f"{event_dict[i].get('day')} - {event_dict[i].get('date')}",
+    #                               value=f"{event_dict[i].get('real_event')}\nGoing from "
+    #                               f"{event_dict[i].get('start')} until {event_dict[i].get('end')}",
+    #                               inline=False)
+    # await ctx.channel.send(content=None, embed=event_embed)
 
 
 @checks.is_dev()

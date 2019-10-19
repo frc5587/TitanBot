@@ -32,14 +32,16 @@ class Event:
             self.title = self.event_dict.get("summary")  # title of event
             self.date = datetime.datetime.strptime(self.event_dict.get('start').get('date'), '%Y-%m-%d')
             self.day = self.date.strftime("%A")
-            self.description = self.event_dict.get("description")
+            description = self.event_dict.get("description")
+            self.description = f"{description}\n" if description is not None else ""
 
         else:
 
             self.title = self.event_dict.get("summary")  # title of event
             self.date = datetime.datetime.strptime(self.event_dict.get('start').get('dateTime')[:10], '%Y-%m-%d')
             self.day = self.date.strftime("%A")
-            self.description = self.event_dict.get("description")
+            description = self.event_dict.get("description")
+            self.description = f"{description}\n" if description is not None else ""
 
             self.start_time = datetime.datetime.strptime(self.event_dict.get('start').get('dateTime')[11:19], "%X").time()
             self.end_time = datetime.datetime.strptime(self.event_dict.get('end').get('dateTime')[11:19], "%X").time()
@@ -52,12 +54,10 @@ class Event:
 
         :return: str
         """
-        return_val = f"Calendar:        {self.calendar_name}\n" \
+        return_val = f"\nCalendar:        {self.calendar_name}\n" \
                      f"Event Name:      {self.title}\n" \
                      f"Date:            {self.date.strftime('%x')}\n" \
                      f"Day of the Week: {self.date.strftime('%A')}\n" \
                      f"Start Time:      {self.start_time.strftime('%I:%M %p') if self.start_time is not None else None}\n" \
                      f"End Time:        {self.end_time.strftime('%I:%M %p') if self.end_time is not None else None}\n"
         return return_val
-
-
