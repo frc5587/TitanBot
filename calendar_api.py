@@ -63,14 +63,19 @@ def call_api(service):  # Call the Calendar API
     :return: list, dict
     """
     now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-    event_list = []
     event_list2 = []
     events = None
+
+    # all calendars
     for i in service.calendarList().list().execute().get('items'):
+
+        # one calendar
         events_result = service.events().list(calendarId=i.get('id'), timeMin=now, singleEvents=True, orderBy='startTime').execute()  # grabs events from one calendar at a time
-        event_list.append(events_result)
         events = events_result.get('items', [])  # get events in the calendar
         for event in events:
+
+            # one event
+
             if event.get('start').get('date') is not None:
                 event_list2.append({'date': datetime.datetime.strptime(event.get('start').get('date'), '%Y-%m-%d').strftime("%m/%d/%Y"),  # just appends all of the important data
                                     'day': date_finder(datetime.datetime.strptime(event.get('start').get('date'), '%Y-%m-%d').weekday()),
