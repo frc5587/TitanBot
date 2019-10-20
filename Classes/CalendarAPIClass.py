@@ -1,5 +1,4 @@
 import datetime
-import os
 import pickle
 from googleapiclient.discovery import build
 from google.auth.transport.requests import Request
