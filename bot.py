@@ -105,36 +105,19 @@ async def events(ctx):
     :return: None
     """
     await ctx.channel.trigger_typing()
+    args = ctx.message.content.split()
     try:
-        if len(ctx.message.content) >= 9:
-            event_embed, event_list = await event_utils.events_by_day(ctx=ctx)
+        if len(args) == 2:
+            embed = await event_utils.manage_events(bot, days=args[1], auto=False)
+        elif len(args) == 1:
+            embed = await event_utils.manage_events(bot, today=True, auto=False)
         else:
-            event_embed, event_list = await event_utils.events_today(ctx=ctx)
-    except ValueError:
+            await extras.command_error(ctx, '707', "You have too many args", )
+            return
+        await ctx.channel.send(embed=embed, content=None)
+    except Exception as eee:  # This is when it sends an error-based message to it can skip back
+        print(eee)
         return
-    for event in event_list:  # iteratively adds events to embed
-        if event.start_time is None:  # for events without a time
-            event_embed.add_field(name=event.date.strftime("%A (%m/%d/%y)"),
-                                  value=f"{event.title}\n{event.description}",
-                                  inline=False)
-        else:  # for events with a time
-            event_embed.add_field(name=event.date.strftime("%A (%m/%d/%y)"),
-                                  value=f"{event.title}\n{event.description}"
-                                        f"\t*{event.start_time.strftime('%I:%M %p')} till "
-                                        f"{event.end_time.strftime('%I:%M %p')}*",
-                                  inline=False)
-        await ctx.channel.send(content=None, embed=event_embed)
-    # for i in range(len(event_dict)):
-    #     if event_dict[i].get('end') is None:
-    #         event_embed.add_field(name=f"{event_dict[i].get('day')} - {event_dict[i].get('date')}",
-    #                               value=event_dict[i].get('real_event'),
-    #                               inline=False)
-    #     else:
-    #         event_embed.add_field(name=f"{event_dict[i].get('day')} - {event_dict[i].get('date')}",
-    #                               value=f"{event_dict[i].get('real_event')}\nGoing from "
-    #                               f"{event_dict[i].get('start')} until {event_dict[i].get('end')}",
-    #                               inline=False)
-    # await ctx.channel.send(content=None, embed=event_embed)
 
 
 @checks.is_dev()
@@ -143,7 +126,7 @@ async def channel_test(ctx):
     """
     Debugging command, sends a message to every channel writen to channels.txt
 
-    Permissions needed: being Max
+    Permissions needed: being a dev
 
     :param ctx: context object
     :return: context object

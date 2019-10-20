@@ -4,11 +4,12 @@ this file contains any bot command or method that controls the auto-announcement
 import datetime
 import discord
 import asyncio
+from typing import List
 
 import extras
-import calendar_api
-from setupPollClass import SetupPoll
-
+from Classes.setupPollClass import SetupPoll
+from Classes.calendarAPIClass import CalendarAPI
+from Classes.eventCalendarClass import EventCalendar
 
 empty_list = []
 
@@ -30,7 +31,7 @@ async def setup(ctx, bot):  # when this method is completed it with write the ch
 
 async def alarm(time, content, ctx, pings):  # this gets looped to inside of an event loop
     """
-    This method is called instide of a loop, and it will continue to loop until the destination time is reached, then it
+    This method is called inside of a loop, and it will continue to loop until the destination time is reached, then it
     will send out the alarm message (embed) and stop
 
     :param time: datetime.time object
@@ -41,7 +42,8 @@ async def alarm(time, content, ctx, pings):  # this gets looped to inside of an 
     """
     await ctx.channel.send("Alarm set!")
     while True:
-        if time <= datetime.datetime.now().time() <= datetime.time(time.hour, time.minute+5, time.second, time.microsecond):  # checks if time is within 5 secs of scheduled time
+        # checks if time is within 5 secs of scheduled time
+        if time <= datetime.datetime.now().time() <= datetime.time(time.hour, time.minute+5, time.second):
             break
         else:
             await asyncio.sleep(30)
@@ -95,23 +97,42 @@ def create_event_embed(is_today: bool, events_exist: bool, num_days: int = None)
     """
     if events_exist and is_today:
         embed = discord.Embed(
-            title="Upcoming events",
-            description=f"Events happening today",
+            title="**Events Today**",
             color=discord.Color.from_rgb(67, 0, 255))
     elif is_today and not events_exist:
         embed = discord.Embed(
-            title=f'There are no events happening today',
+            title=f'There are no Events Today',
             color=discord.Color.from_rgb(67, 0, 255))
     elif not is_today and events_exist:
         embed = discord.Embed(
-            title="Upcoming events",
-            description=f"Events happening through {f'the next {num_days} days' if num_days != 1 else 'tomorrow'}",
+            title=f"**Events happening through {f'the next {num_days} days' if num_days != 1 else 'tomorrow'}**",
             color=discord.Color.from_rgb(67, 0, 255))
     else:
         embed = discord.Embed(
-            title=f"There are no events happening through {f'the next {num_days} days' if num_days != 1 else 'tomorrow'}",
+            title=f"**There are no events happening through "
+                  f"{f'the next {num_days} days' if num_days != 1 else 'tomorrow'}**",
             color=discord.Color.from_rgb(67, 0, 255))
     return embed
+
+
+def get_events(days: int = None):
+    """
+    First it sets up the api, then it gets the events from it, organizes the events by date, indexes the calendar by
+    date, returns the events that are happening in the next `days` days, if you want events for today `days` should
+    equal 0
+
+    :param days: int
+    :return: list
+    """
+    api = CalendarAPI()
+    api.start_api()
+    api.get_calendars()
+    big_calendar = api.calendars[0].combine(api.calendars[1:])
+
+    big_calendar.sort(key=lambda x: x.date)
+    massive_calendar = EventCalendar(list_of_events=big_calendar)
+    sliced_calendar = massive_calendar[datetime.datetime.today().date() + datetime.timedelta(days=days)]
+    return sliced_calendar
 
 
 async def events_by_day(days: str = None, ctx=None, events_exist: bool = False):
@@ -128,7 +149,7 @@ async def events_by_day(days: str = None, ctx=None, events_exist: bool = False):
     if ctx is not None:
         days = ctx.message.content.split()[1]
     if days.isdigit():
-        event_list = calendar_api.main(int(days))
+        event_list = get_events(int(days))
         if event_list == empty_list:
             no_events = create_event_embed(False, False, num_days=days)
             if events_exist:
@@ -141,7 +162,7 @@ async def events_by_day(days: str = None, ctx=None, events_exist: bool = False):
     raise ValueError
 
 
-async def events_today(ctx=None, events_exist: bool =False):
+async def events_today(ctx=None, events_exist: bool = False):
     """
     This creates an embed for only events happening today, and then returns it to the parent method to have the actual
     events added in, it raises a ValueError as a shortcut back, it also generates the list of events that the parent
@@ -151,7 +172,7 @@ async def events_today(ctx=None, events_exist: bool =False):
     :param ctx: context object
     :return: discord.Embed, list
     """
-    event_list = calendar_api.main(0)
+    event_list = get_events(0)
     if event_list == empty_list:
         no_events = create_event_embed(True, False)
         if events_exist:
@@ -174,7 +195,7 @@ def WHAT_TIME_IS_IT(question_mark: str) -> bool:
         datetime.datetime.strptime('13:36', '%H:%M').time()
 
 
-async def manage_events(channels, bot, today):
+async def manage_events(bot, today: bool = False, days: str = '7', auto: bool = True, channels: List[str] = None):
     """
     Gets basic embed then either appends the events to it and sends it or sends an empty one saying that there are no
     events happening, it then iterates through all of the channels, creating the channel object from the channel ids and
@@ -183,24 +204,30 @@ async def manage_events(channels, bot, today):
     :param today: bool, if True then it send an embed that only contains today's events
     :param channels: list (str), list of strings representing all of the channels that the announcement must be sent to
     :param bot: connection to discord
+    :param days: str[int]
+    :param auto: bool
     :return: None
     """
     if today:  # get events for today
         event_embed, event_list = await events_today(events_exist=True)
     else:  # gets events for the next week
-        event_embed, event_list = await events_by_day(days='7', events_exist=True)
+        event_embed, event_list = await events_by_day(days=days, events_exist=True)
     if event_list is not None:  # if the event_list is None it will just send the embed saying that there are no events
         for event in event_list:  # iteratively adds events to embed
             if event.start_time is None:  # for events without a time
                 event_embed.add_field(name=event.date.strftime("%A (%m/%d/%y)"),
-                                      value=f"{event.title}\n{event.description}",
+                                      value=f"• {event.title} "
+                                            f"{f'- {event.description}' if event.description is not None else ''}",
                                       inline=False)
             else:  # for events with a time
                 event_embed.add_field(name=event.date.strftime("%A (%m/%d/%y)"),
-                                      value=f"{event.title}\n{event.description}"
-                                            f"\t*{event.start_time.strftime('%I:%M %p')} till "
+                                      value=f"• {event.title} "
+                                            f"{f'- {event.description}' if event.description is not None else ''}\n"
+                                            f"--> *{event.start_time.strftime('%I:%M %p')} to "
                                             f"{event.end_time.strftime('%I:%M %p')}*",
                                       inline=False)
+    if not auto:
+        return event_embed
     for channel in channels:
         channel = bot.get_channel(int(channel))
         await channel.send(content=None, embed=event_embed)
@@ -227,7 +254,7 @@ async def auto_announcements(bot):
     only covering that day
 
     :param bot: connection to discord
-    :return: None (just loops)
+    :return: None (it just loops)
     """
     last_day = datetime.datetime.today() + datetime.timedelta(days=-1)  # creates a variable representing yesterday
     last_day = last_day.weekday()
@@ -236,12 +263,13 @@ async def auto_announcements(bot):
         if WHAT_TIME_IS_IT('?'):  # True if it is 9:30
             this_day = datetime.datetime.today().weekday()
             channels = read_channels()  # reads channel ids
-            if datetime.datetime.today().weekday() == 6 and this_day != last_day:  # if it is sunday and it hasn't already sent a message
-                await manage_events(channels, bot, today=False)
+            # if it is sunday and it hasn't already sent a message
+            if datetime.datetime.today().weekday() == 6 and this_day != last_day:
+                await manage_events(bot, today=False, channels=channels)
                 last_day = this_day
                 await asyncio.sleep(9999)
             elif this_day != last_day:  # if it is not sunday and hasn't alread sent a message
-                await manage_events(channels, bot, today=True)
+                await manage_events(bot, today=True, channels=channels)
                 last_day = this_day
                 await asyncio.sleep(9999)
         await asyncio.sleep(60)

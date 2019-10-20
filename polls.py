@@ -1,7 +1,7 @@
 import discord
 import asyncio
 
-from PollBaseClass import PollBaseClass
+from Classes.PollBaseClass import PollBaseClass
 
 
 class Poll(PollBaseClass):
