@@ -18,10 +18,10 @@ def read_discord_token():
     """
 
     unencrypted_file = "./tokens/discord-token.txt"
-    encrypted_file = "./tokens/discord.txt.gpg"
+    encrypted_file = "./tokens/discord-token.txt.gpg"
 
-    # If decrypted discord token doesnt exist, try to decrypt token with gpg
-    if not os.path.exists(unencrypted_file) and sys.platform == "posix":
+    # If decrypted discord token doesn't exist, try to decrypt token with gpg
+    if should_attempt_decrypt(unencrypted_file):
         print("Unable to find Discord token; trying to decrypt token...")
         attempt_decrypt(encrypted_file, "discord")
 
@@ -52,8 +52,8 @@ def read_calendar_credentials(SCOPES):
     unencrypted_file = "./tokens/calendar-credentials.json"
     encrypted_file = "./tokens/calendar-credentials.json.gpg"
 
-    # If decrypted discord token doesnt exist, try to decrypt token with gpg
-    if not os.path.exists(unencrypted_file) and sys.platform == "posix":
+    # If decrypted discord token doesn't exist, try to decrypt token with gpg
+    if should_attempt_decrypt(unencrypted_file):
         print(
             "Unable to find Google Calendar credentials; trying to decrypt credentials..."
         )
@@ -87,8 +87,8 @@ def read_google_token():
     unencrypted_file = "./tokens/calendar-token.pickle"
     encrypted_file = "./tokens/calendar-token.pickle.gpg"
 
-    # If decrypted discord token doesnt exist, try to decrypt token with gpg
-    if not os.path.exists(unencrypted_file) and sys.platform == "posix":
+    # If decrypted discord token doesn't exist, try to decrypt token with gpg
+    if should_attempt_decrypt(unencrypted_file):
         print("Unable to find cached Google token; trying to decrypt token...")
         attempt_decrypt(encrypted_file, "gtoken")
 
@@ -99,6 +99,12 @@ def read_google_token():
 
     # No token files (encrypted or otherwise) or on Windows and can't decrypt, so throw error
     raise RuntimeError("Could not fetch Google Calendar credentials")
+
+
+def should_attempt_decrypt(unencrypted_file):
+    return not os.path.exists(unencrypted_file) and sys.platform in [
+        "posix", "darwin"
+    ]
 
 
 def attempt_decrypt(encrypted_file, decrypt_type):
@@ -121,7 +127,8 @@ def attempt_decrypt(encrypted_file, decrypt_type):
             f"Unable to find encrypted discord token `{encrypted_file}`")
 
     # Run decrypt script
-    return_code = subprocess.call(f"./scripts/decrypt-tokens {decrypt_type}")
+    decrypt_command = ["./scripts/decrypt-tokens.sh", decrypt_type]
+    return_code = subprocess.call(decrypt_command)
 
     # Check that it was successful
     if return_code == 1:
