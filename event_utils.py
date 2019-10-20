@@ -194,7 +194,7 @@ def WHAT_TIME_IS_IT(question_mark: str) -> bool:
         datetime.datetime.strptime('13:36', '%H:%M').time()
 
 
-async def manage_events(bot, ctx=None, today: bool = False, days: str = '7', auto: bool = True, channels: List[str] = None):
+async def manage_events(bot, ctx=None, today: bool = False, days: str = '14', auto: bool = True, channels: List[str] = None):
     """
     Gets basic embed then either appends the events to it and sends it or sends an empty one saying that there are no
     events happening, it then iterates through all of the channels, creating the channel object from the channel ids and
@@ -268,8 +268,8 @@ async def auto_announcements(bot):
                 await manage_events(bot, today=False, channels=channels)
                 last_day = this_day
                 await asyncio.sleep(9999)
-            elif this_day != last_day:  # if it is not sunday and hasn't alread sent a message
-                await manage_events(bot, today=True, channels=channels)
+            elif this_day != last_day:  # if it is not sunday and hasn't already sent a message
+                await manage_events(bot, days='3', channels=channels)
                 last_day = this_day
                 await asyncio.sleep(9999)
         await asyncio.sleep(60)

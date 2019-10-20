@@ -13,7 +13,7 @@ def read_discord_token():
     is on a POSIX system, an attempt is made to decrypt the encrypted copy of the
     token included in this repository using gpg (see README for details).
 
-    :raises RuntimeError: Raised when reading the Discord token was unsuccesful
+    :raises RuntimeError: Raised when reading the Discord token was unsuccessful
     :return: str
     """
 
@@ -79,7 +79,7 @@ def read_google_token():
     is on a POSIX system, an attempt is made to decrypt the encrypted copy of the
     token included in this repository using gpg (see README for details).
 
-    :raises RuntimeError: Raised when reading the credentials was unsuccesful
+    :raises RuntimeError: Raised when reading the credentials was unsuccessful
     :return: Google token previously generated through Flow
     :rtype: Object
     """
@@ -103,7 +103,7 @@ def read_google_token():
 
 def should_attempt_decrypt(unencrypted_file):
     return not os.path.exists(unencrypted_file) and sys.platform in [
-        "posix", "darwin"
+        "posix", "darwin", "linux"
     ]
 
 
@@ -123,8 +123,7 @@ def attempt_decrypt(encrypted_file, decrypt_type):
 
     # Look for encryped token
     if not os.path.exists(encrypted_file):
-        raise FileNotFoundError(
-            f"Unable to find encrypted discord token `{encrypted_file}`")
+        raise FileNotFoundError(f"Unable to find encrypted discord token `{encrypted_file}`")
 
     # Run decrypt script
     decrypt_command = ["./scripts/decrypt-tokens.sh", decrypt_type]

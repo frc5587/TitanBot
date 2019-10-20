@@ -2,10 +2,10 @@ import datetime
 import os
 import pickle
 from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
 from Classes.EventCalendarClass import EventCalendar
+import tokens
 
 
 class CalendarAPI:
@@ -28,21 +28,19 @@ class CalendarAPI:
 
         :return: CalendarAPI
         """
-        if os.path.exists(self.token_location):
-            with open(self.token_location, 'rb') as token:
-                creds = pickle.load(token)
+        creds = tokens.read_google_token()
 
-            # If there are no (valid) credentials available, let the user log in.
-            if not creds or not creds.valid:
-                if creds and creds.expired and creds.refresh_token:
-                    creds.refresh(Request())
+        # If there are no (valid) credentials available, let the user log in.
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
 
-                else:
-                    flow = InstalledAppFlow.from_client_secrets_file(self.credentials_location, self.scopes)
-                    creds = flow.run_local_server()
+            else:
+                flow = tokens.read_calendar_credentials(self.scopes)
+                creds = flow.run_local_server()
 
-                with open(self.token_location, 'wb+') as token:  # Save the credentials for the next run
-                    pickle.dump(creds, token)
+            with open(self.token_location, 'wb+') as token:  # Save the credentials for the next run
+                pickle.dump(creds, token)
 
         self.service = build('calendar', 'v3', credentials=creds)
         return self

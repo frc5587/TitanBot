@@ -80,7 +80,7 @@ class EventCalendar:
         :return: self
         :rtype: Event
         """
-        today = datetime.datetime.today().date()
+        today = datetime.datetime.today().date() - datetime.timedelta(days=1)
         this_day = today
         for num, event in enumerate(self.list_of_events):
             next_day = self.list_of_events[num].date
