@@ -10,20 +10,10 @@ import checks
 import polls
 import admin
 from math_equ import math_main
+from tokens import read_discord_token
 
 
-def read_token():
-    """
-    reads token.txt, it contains the client secret that the bot needs to connect
-
-    :return: str
-    """
-    with open("tokens/discord-token.txt", "r") as f:
-        lines = f.readlines()
-        return lines[0].strip()
-
-
-token = read_token()
+token = read_discord_token()
 bot = commands.Bot(command_prefix=['-', './'], case_insensitive=True)
 bot.remove_command("help")
 

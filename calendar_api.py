@@ -3,10 +3,9 @@ this handles all interactions the google calendar api, and sorting the events th
 """
 import datetime
 import pickle
-import os.path
 from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+import tokens
 
 
 # If modifying these scopes, delete the file token.pickle.
@@ -35,17 +34,16 @@ def setup():
     # The file token.pickle stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
-    if os.path.exists('tokens/calendar-token.pickle'):
-        with open('tokens/calendar-token.pickle', 'rb') as token:
-            creds = pickle.load(token)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
+    try:
+        creds = tokens.read_google_token()
+        # If credentials were loaded, but are invalid, refresh them
+        if creds.expired and creds.refresh_token:
             creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'tokens/calendar-credentials.json', SCOPES)
-            creds = flow.run_local_server()
+
+    except Exception:
+        # If there are no (valid) credentials available, let the user log in.
+        flow = tokens.read_calendar_credentials(SCOPES)
+        creds = flow.run_local_server()
         # Save the credentials for the next run
         with open('tokens/calendar-token.pickle', 'wb+') as token:
             pickle.dump(creds, token)
