@@ -1,11 +1,15 @@
 import datetime
 from typing import Union, List
 
-from Classes.EventClass import Event
+from classes.calendar_event import Event
 
 
 class EventCalendar:
-    def __init__(self, calendar_dict: dict = None, build=None, list_of_events: List[Event] = None):
+
+    def __init__(self,
+                 calendar_dict: dict = None,
+                 build=None,
+                 list_of_events: List[Event] = None):
         """
         Object representing a list of events from a specific google calendar, you can index it to get events through
         that date or just with ints and slices
@@ -28,13 +32,15 @@ class EventCalendar:
 
         :return: EventCalendar
         """
-        self.list_of_events_raw = self.calendar_dict.get('items')  # get events in the calendar
+        self.list_of_events_raw = self.calendar_dict.get(
+            'items')  # get events in the calendar
         for raw_event in self.list_of_events_raw:
             event = Event(self.calendar_dict.get("summary"), raw_event)
             self.list_of_events.append(event.make_better())
         return self
 
-    def __getitem__(self, item: Union[datetime.date, slice, int]) -> List[Event]:
+    def __getitem__(self,
+                    item: Union[datetime.date, slice, int]) -> List[Event]:
         """
         Returns all events that happen before and on the date
 
@@ -49,7 +55,9 @@ class EventCalendar:
                 if event.date > item:
                     return self.list_of_events[:num]
         else:
-            raise TypeError(f"Must be either int, slice, or datetime.date, not {type(item)}")
+            raise TypeError(
+                f"Must be either int, slice, or datetime.date, not {type(item)}"
+            )
 
     def __len__(self) -> int:
         """
@@ -90,7 +98,9 @@ class EventCalendar:
                 coeff = 1
             date_add = this_day + datetime.timedelta(days=1)
             for day in range((next_day - this_day).days - coeff):
-                self.list_of_events.insert(num + day, Event(empty=True, date=date_add).make_better())
+                self.list_of_events.insert(
+                    num + day,
+                    Event(empty=True, date=date_add).make_better())
                 date_add += datetime.timedelta(days=1)
             this_day = next_day
         return self

@@ -3,7 +3,7 @@ import pickle
 from googleapiclient.discovery import build
 from google.auth.transport.requests import Request
 
-from Classes.EventCalendarClass import EventCalendar
+from classes.calendar import EventCalendar
 import tokens
 
 

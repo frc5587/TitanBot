@@ -7,9 +7,9 @@ import asyncio
 from typing import List
 
 import extras
-from Classes.SetupPollClass import SetupPoll
-from Classes.CalendarAPIClass import CalendarAPI
-from Classes.EventCalendarClass import EventCalendar
+from classes.SetupPollClass import SetupPoll
+from classes.calendar_api import CalendarAPI
+from classes.calendar import EventCalendar
 
 empty_list = []
 

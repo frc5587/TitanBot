@@ -1,6 +1,6 @@
 import discord
 
-from Classes.PollBaseClass import PollBaseClass
+from classes.PollBaseClass import PollBaseClass
 
 
 class SetupPoll(PollBaseClass):

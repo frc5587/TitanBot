@@ -2,10 +2,15 @@ import datetime
 
 
 class Event:
-    def __init__(self, calendar_name: str = None, event_dict: dict = None, empty: bool = False, date: datetime.date = None):
+
+    def __init__(self,
+                 calendar_name: str = None,
+                 event_dict: dict = None,
+                 empty: bool = False,
+                 date: datetime.date = None):
         """
-        Represents an individual event in a calendar, once make_better() is called it organizes all of the dat for easy
-        access
+        Represents an individual event in a calendar, once make_better() is called it
+        organizes all of the dat for easy access
 
         :param calendar_name: The name of the calendar this event was from
         :type calendar_name: str
@@ -32,7 +37,8 @@ class Event:
         if self.empty:
 
             self.title = "No Events"
-            self.date_time = datetime.datetime(self.date.year, self.date.month, self.date.day)
+            self.date_time = datetime.datetime(self.date.year, self.date.month,
+                                               self.date.day)
             self.day = self.date.strftime('%A')
             return self
 
@@ -41,7 +47,8 @@ class Event:
         if self.date is not None:
 
             self.title = self.event_dict.get("summary")  # title of event
-            self.date_time = datetime.datetime.strptime(self.event_dict.get('start').get('date'), '%Y-%m-%d')
+            self.date_time = datetime.datetime.strptime(
+                self.event_dict.get('start').get('date'), '%Y-%m-%d')
             self.date = self.date_time.date()
             self.day = self.date.strftime("%A")
             self.description = self.event_dict.get("description")
@@ -49,13 +56,16 @@ class Event:
         else:
 
             self.title = self.event_dict.get("summary")  # title of event
-            self.date_time = datetime.datetime.strptime(self.event_dict.get('start').get('dateTime')[:19], '%Y-%m-%dT%X')
+            self.date_time = datetime.datetime.strptime(
+                self.event_dict.get('start').get('dateTime')[:19],
+                '%Y-%m-%dT%X')
             self.date = self.date_time.date()
             self.day = self.date.strftime("%A")
             self.description = self.event_dict.get("description")
 
             self.start_time = self.date_time.time()
-            self.end_time = datetime.datetime.strptime(self.event_dict.get('end').get('dateTime')[11:19], "%X").time()
+            self.end_time = datetime.datetime.strptime(
+                self.event_dict.get('end').get('dateTime')[11:19], "%X").time()
 
         return self
 
@@ -65,11 +75,17 @@ class Event:
 
         :return: str
         """
-        return_val = f"\nCalendar:        {self.calendar_name}\n" \
-                     f"Event Name:      {self.title}\n" \
-                     f"Description:     {self.description}\n"\
-                     f"Date:            {self.date.strftime('%x')}\n" \
-                     f"Day of the Week: {self.date.strftime('%A')}\n" \
-                     f"Start Time:      {self.start_time.strftime('%I:%M %p') if self.start_time is not None else None}\n" \
-                     f"End Time:        {self.end_time.strftime('%I:%M %p') if self.end_time is not None else None}\n"
-        return return_val
+        date = self.date.strftime('%x')
+        day = self.date.strftime('%A')
+        start_time = self.start_time.strftime(
+            '%I:%M %p') if self.start_time is not None else None
+        end_time = self.end_time.strftime(
+            '%I:%M %p') if self.end_time is not None else None
+
+        return f"\nCalendar:        {self.calendar_name}\n" \
+               f"Event Name:      {self.title}\n" \
+               f"Description:     {self.description}\n"\
+               f"Date:            {date}\n" \
+               f"Day of the Week: {day}\n" \
+               f"Start Time:      {start_time}\n" \
+               f"End Time:        {end_time}\n"
