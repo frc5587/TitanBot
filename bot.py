@@ -108,7 +108,7 @@ async def events(ctx):
     args = ctx.message.content.split()
     try:
         if len(args) == 2:
-            embed = await event_utils.manage_events(bot, days=args[1], auto=False)
+            embed = await event_utils.manage_events(bot, ctx=ctx, days=args[1], auto=False)
         elif len(args) == 1:
             embed = await event_utils.manage_events(bot, today=True, auto=False)
         else:

@@ -5,7 +5,7 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
-from Classes.eventCalendarClass import EventCalendar
+from Classes.EventCalendarClass import EventCalendar
 
 
 class CalendarAPI:

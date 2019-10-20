@@ -7,9 +7,9 @@ import asyncio
 from typing import List
 
 import extras
-from Classes.setupPollClass import SetupPoll
-from Classes.calendarAPIClass import CalendarAPI
-from Classes.eventCalendarClass import EventCalendar
+from Classes.SetupPollClass import SetupPoll
+from Classes.CalendarAPIClass import CalendarAPI
+from Classes.EventCalendarClass import EventCalendar
 
 empty_list = []
 
@@ -101,7 +101,7 @@ def create_event_embed(is_today: bool, events_exist: bool, num_days: int = None)
             color=discord.Color.from_rgb(67, 0, 255))
     elif is_today and not events_exist:
         embed = discord.Embed(
-            title=f'There are no Events Today',
+            title=f'There are no events today',
             color=discord.Color.from_rgb(67, 0, 255))
     elif not is_today and events_exist:
         embed = discord.Embed(
@@ -129,8 +129,9 @@ def get_events(days: int = None):
     api.get_calendars()
     big_calendar = api.calendars[0].combine(api.calendars[1:])
 
-    big_calendar.sort(key=lambda x: x.date)
+    big_calendar.sort(key=lambda x: x.date_time)
     massive_calendar = EventCalendar(list_of_events=big_calendar)
+    massive_calendar.find_empty_days()
     sliced_calendar = massive_calendar[datetime.datetime.today().date() + datetime.timedelta(days=days)]
     return sliced_calendar
 
@@ -146,8 +147,6 @@ async def events_by_day(days: str = None, ctx=None, events_exist: bool = False):
     :param events_exist: bool
     :return: discord.Embed, list
     """
-    if ctx is not None:
-        days = ctx.message.content.split()[1]
     if days.isdigit():
         event_list = get_events(int(days))
         if event_list == empty_list:
@@ -195,7 +194,7 @@ def WHAT_TIME_IS_IT(question_mark: str) -> bool:
         datetime.datetime.strptime('13:36', '%H:%M').time()
 
 
-async def manage_events(bot, today: bool = False, days: str = '7', auto: bool = True, channels: List[str] = None):
+async def manage_events(bot, ctx=None, today: bool = False, days: str = '7', auto: bool = True, channels: List[str] = None):
     """
     Gets basic embed then either appends the events to it and sends it or sends an empty one saying that there are no
     events happening, it then iterates through all of the channels, creating the channel object from the channel ids and
@@ -204,6 +203,7 @@ async def manage_events(bot, today: bool = False, days: str = '7', auto: bool = 
     :param today: bool, if True then it send an embed that only contains today's events
     :param channels: list (str), list of strings representing all of the channels that the announcement must be sent to
     :param bot: connection to discord
+    :param ctx: context
     :param days: str[int]
     :param auto: bool
     :return: None
@@ -211,19 +211,19 @@ async def manage_events(bot, today: bool = False, days: str = '7', auto: bool = 
     if today:  # get events for today
         event_embed, event_list = await events_today(events_exist=True)
     else:  # gets events for the next week
-        event_embed, event_list = await events_by_day(days=days, events_exist=True)
+        event_embed, event_list = await events_by_day(ctx=ctx, days=days, events_exist=True)
     if event_list is not None:  # if the event_list is None it will just send the embed saying that there are no events
         for event in event_list:  # iteratively adds events to embed
             if event.start_time is None:  # for events without a time
                 event_embed.add_field(name=event.date.strftime("%A (%m/%d/%y)"),
-                                      value=f"• {event.title} "
+                                      value=f"➤ {event.title} "
                                             f"{f'- {event.description}' if event.description is not None else ''}",
                                       inline=False)
             else:  # for events with a time
                 event_embed.add_field(name=event.date.strftime("%A (%m/%d/%y)"),
-                                      value=f"• {event.title} "
+                                      value=f"➤ {event.title} "
                                             f"{f'- {event.description}' if event.description is not None else ''}\n"
-                                            f"--> *{event.start_time.strftime('%I:%M %p')} to "
+                                            f"━➤ *{event.start_time.strftime('%I:%M %p')} to "
                                             f"{event.end_time.strftime('%I:%M %p')}*",
                                       inline=False)
     if not auto:
