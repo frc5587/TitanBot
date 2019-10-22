@@ -1,6 +1,6 @@
 import discord
 import asyncio
-from typing import List
+from typing import List, Tuple
 
 from classes.PollBaseClass import PollBaseClass
 
@@ -59,7 +59,7 @@ class Poll(PollBaseClass):
         self.text += '\n'.join((f"{emoji} - {role.mention}" for emoji, role in self.emoji_role_paired_list))
         return self
 
-    def get_role(self, emoji_unicode: str) -> (discord.Role, List[(str, discord.Role)]):
+    def get_role(self, emoji_unicode: str) -> (discord.Role, List[Tuple[str, discord.Role]]):
         """
         Gets the role associated with the unicode of an emoji, and returns a list of the rest of the emoji role pair
         without the emoji role pair that was asked for
