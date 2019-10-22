@@ -3,9 +3,10 @@ import sys
 import subprocess
 from google_auth_oauthlib.flow import InstalledAppFlow
 import pickle
+from typing import List
 
 
-def read_discord_token():
+def read_discord_token() -> str:
     """
     Fetches the client secret for the Discord bot.
 
@@ -14,7 +15,8 @@ def read_discord_token():
     token included in this repository using gpg (see README for details).
 
     :raises RuntimeError: Raised when reading the Discord token was unsuccessful
-    :return: str
+    :return: discord token
+    :rtype: str
     """
 
     unencrypted_file = "./tokens/discord-token.txt"
@@ -35,7 +37,7 @@ def read_discord_token():
     raise RuntimeError("Could not fetch Discord bot token")
 
 
-def read_calendar_credentials(SCOPES):
+def read_calendar_credentials(SCOPES: List[str]) -> InstalledAppFlow:
     """
     Fetches the InstalledAppFlow for the Google Calendar credentials.
 
@@ -45,8 +47,9 @@ def read_calendar_credentials(SCOPES):
 
     :param SCOPES: Scopes of the Google Calendar credentials for creating the Flow
     :type SCOPES: List[str]
-    :raises RuntimeError: Raised when reading the credentials was unsuccesful
-    :return: Flow
+    :raises RuntimeError: Raised when reading the credentials was unsuccessful
+    :return: Object to get Google data
+    :rtype: InstalledAppFlow
     """
 
     unencrypted_file = "./tokens/calendar-credentials.json"
@@ -68,7 +71,7 @@ def read_calendar_credentials(SCOPES):
     raise RuntimeError("Could not fetch Google Calendar credentials")
 
 
-def read_google_token():
+def read_google_token() -> pickle:
     """Fetches the Google token from a previously generated pickle.
 
     This token is created and stored to prevent the bot from having to go through
@@ -83,7 +86,6 @@ def read_google_token():
     :return: Google token previously generated through Flow
     :rtype: Object
     """
-
     unencrypted_file = "./tokens/calendar-token.pickle"
     encrypted_file = "./tokens/calendar-token.pickle.gpg"
 
@@ -101,13 +103,13 @@ def read_google_token():
     raise RuntimeError("Could not fetch Google Calendar credentials")
 
 
-def should_attempt_decrypt(unencrypted_file):
+def should_attempt_decrypt(unencrypted_file: str) -> bool:
     return not os.path.exists(unencrypted_file) and sys.platform in [
         "posix", "darwin", "linux"
     ]
 
 
-def attempt_decrypt(encrypted_file, decrypt_type):
+def attempt_decrypt(encrypted_file: str, decrypt_type: str) -> None:
     """Attempts to decrypt the encrypted file provided by passing the decrypt type provided into `decrypt-tokens.sh`.
 
     The method checks that encrypted_file exists and then passes decrypt_type to the `./scripts/decrypt-tokens`
@@ -121,7 +123,7 @@ def attempt_decrypt(encrypted_file, decrypt_type):
     :raises EnvironmentError: Raised when bash script errors and exits
     """
 
-    # Look for encryped token
+    # Look for encrypted token
     if not os.path.exists(encrypted_file):
         raise FileNotFoundError(f"Unable to find encrypted discord token `{encrypted_file}`")
 

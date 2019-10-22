@@ -1,67 +1,69 @@
-from sympy import N
 from sympy.solvers import solve
-from sympy import Symbol
+from sympy import Symbol, N
 import mpmath as mp
 from sympy.parsing.sympy_parser import (parse_expr, standard_transformations, implicit_multiplication)
+from typing import Union, List
 
 
-def organize(start_string):
+def organize(input_string: str) -> (Union[Symbol, None], str):
     """
-    Takes the input from the user and discard the "-math" part and then find the variable that they want to solve for
-    and sets the equation equal to 0, if they aren't solving for a variable then it just passes it to the next step
+    Takes the input from the user and discard the "-math" part and then finds the variable that they want to solve for
+    and sets the equation equal to 0, if they aren't solving for a variable then it just passes it to the next step, it
+    also removes all apaces
 
-    :param: str
-    :return: tuple
+    :param input_string: the string that comes straight from the user
+    :type input_string: str
+    :return: variable/None is variable doesn't exist, string of equation
+    :rtype: Union[Symbol, None], str
     """
-    equ_list = start_string.split()
-    equ_list.pop(0)
-    equ_str = ""
-    variable_bool = False
-    varible = None
-    for i in equ_list:
-        if i is None:
-            continue
-        elif i.lower() == '-v':
-            location = equ_list.index(i) + 1
-            varible = Symbol(equ_list[location])
-            equ_list[location] = None
-            variable_bool = True
-        else:
-            equ_str += i
-    if '=' in equ_str:
-        equ_str = f"({equ_str})".replace('=', ')-(')
-    equ_str = equ_str.replace("^", "**").replace("e", str(mp.e))
-    return (variable_bool, varible, equ_str)
+    element_list = input_string.split()
+    element_list.pop(0)
+    equation_str = ""
+    variable, ignore = None, None
+    for element in element_list:
+        if element.lower() == '-v':
+            index = element_list.index(element) + 1
+            variable = Symbol(element_list[index])
+            ignore = element_list[index]
+        elif element != ignore:
+            equation_str += element
+    if '=' in equation_str:
+        equation_str = f"({equation_str})".replace('=', ')-(')
+    equation_str = equation_str.replace("^", "**").replace("e", str(mp.e))
+    return variable, equation_str
 
 
-def solve_equ(variable, equ):
+def solve_equ(variable: Symbol, equation: str) -> List[str]:
     """
     If it is just an expression it will simplify it, otherwise it will solve it and return all possible answers in a
-    list
+    list, with backticks (`) around it so it can be a little code segment with the discord markdown
 
     :param variable: sympy.Symbol
-    :param equ: str
-    :return: list
+    :param equation: str
+    :return: first element is all possible solutions
+    :rtype: List[str]
     """
-    ans = []
+    answer = []
     if variable is None:
-        return [f"`{N(equ)}`"]
+        return [f"`{eval(str(N(equation)))}`"]
     else:
-        partial_ans = solve(equ, variable, dict=True)
-    for i in partial_ans:
-        ans.append(f"{variable} = `{N(list(i.values())[0])}`\n")
-    return ans
+        solved_answer = solve(equation, variable, dict=True)
+    for ans in solved_answer:
+        answer.append(f"{variable} = `{eval(str(N(list(ans.values())[0])))}`\n")
+    return answer
 
 
-def math_main(user_input):
+def math_main(user_input: str) -> (List[str], str):
     """
     Manages the solving process, first it organizes it, then it parse the str into an equation/expression, finally it
     solves/simplifies it then returns a list of answers
 
-    :param user_input: str
-    :return: list
+    :param user_input: content of the message
+    :type user_input: str
+    :return: list of answers, original equation
+    :rtype: List[str], str
     """
-    set_pieces = organize(user_input)
-    simplified_equ = parse_expr(set_pieces[2], transformations=standard_transformations + (implicit_multiplication,))
-    answers = solve_equ(set_pieces[1], simplified_equ)
-    return answers, set_pieces[2]
+    variable, equation = organize(user_input)
+    simplified_equ = parse_expr(equation, transformations=standard_transformations + (implicit_multiplication,))
+    answers = solve_equ(variable, simplified_equ)
+    return answers, equation

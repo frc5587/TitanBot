@@ -10,7 +10,10 @@ import tokens
 class CalendarAPI:
 
     def __init__(self):
-
+        """
+        There is nothing that you need to pass through, if you need to change the scopes you need to just edit the
+        self.scopes line and regenerate the tokens/calendar-token.pickle
+        """
         self.scopes = ['https://www.googleapis.com/auth/calendar.readonly']
         self.token_location = 'tokens/calendar-token.pickle'
         self.credentials_location = 'tokens/calendar-credentials.json'
@@ -24,8 +27,6 @@ class CalendarAPI:
         The file token.pickle stores the user's access and refresh tokens, and is
         created automatically when the authorization flow completes for the first
         time.
-
-        :return: CalendarAPI
         """
         creds = tokens.read_google_token()
 
@@ -47,8 +48,6 @@ class CalendarAPI:
     def get_calendars(self):
         """
         Creates and organizes all of the calendars with EventCalendar and then keeps a list of them
-
-        :return: CalendarAPI
         """
         now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
         for calendar_raw in self.service.calendarList().list().execute().get('items'):

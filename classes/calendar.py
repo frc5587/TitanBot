@@ -5,7 +5,6 @@ from classes.calendar_event import Event
 
 
 class EventCalendar:
-
     def __init__(self,
                  calendar_dict: dict = None,
                  build=None,
@@ -29,8 +28,6 @@ class EventCalendar:
     def organize(self):
         """
         For every DooDoo style Google event dict in self.list_of_events_raw it creates a nice Event class for each one
-
-        :return: EventCalendar
         """
         self.list_of_events_raw = self.calendar_dict.get(
             'items')  # get events in the calendar
@@ -46,7 +43,8 @@ class EventCalendar:
 
         :param item: The data contained in the [] around the object
         :type item: Union[datetime.date, slice, int]
-        :return: list[Event]
+        :return: list of events after the index
+        :rtype: list[Event]
         """
         if type(item) in (slice, int):
             return self.list_of_events[item]
@@ -63,7 +61,8 @@ class EventCalendar:
         """
         Returns the amount of events in this calendar
 
-        :return: int
+        :return: the amount of Events in the list_of_events
+        :rtype: int
         """
         return len(self.list_of_events)
 
@@ -73,7 +72,8 @@ class EventCalendar:
 
         :param calendars: A list of EventCalendar objects, they all get combined
         :type calendars: List[EventCalendar]
-        :return: List[Event]
+        :return: The huge list of events from all of the calendars
+        :rtype: List[Event]
         """
         big_calender = self.list_of_events
         for calendar in calendars:
@@ -84,9 +84,6 @@ class EventCalendar:
         """
         Iterates through all of the days in self.list_of_events and find days that don't have events for them, then it
         adds "blank" events stating that there are no events that day
-
-        :return: self
-        :rtype: Event
         """
         today = datetime.datetime.today().date() - datetime.timedelta(days=1)
         this_day = today
