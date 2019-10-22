@@ -1,4 +1,5 @@
 discord.py
+mpmath
 sympy
 google-api-python-client
 google_auth_oauthlib

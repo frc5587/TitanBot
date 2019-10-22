@@ -31,8 +31,6 @@ class Event:
     def make_better(self):
         """
         Changes the DooDoo style Google event dicts into some nice OOP for your convenience
-
-        :return: Event
         """
         if self.empty:
 
@@ -73,7 +71,8 @@ class Event:
         """
         Represents all of the data contained in this with some nice formatting
 
-        :return: str
+        :return: The str to represent the Event object
+        :rtype: str
         """
         date = self.date.strftime('%x')
         day = self.date.strftime('%A')

@@ -4,23 +4,24 @@ this file contains any bot command or method that controls the auto-announcement
 import datetime
 import discord
 import asyncio
-from typing import List
+from typing import List, Union
 
 import extras
+from admin import clear_and_find_channels
 from classes.SetupPollClass import SetupPoll
 from classes.calendar_api import CalendarAPI
 from classes.calendar import EventCalendar
+from classes.calendar_event import Event
 
-empty_list = []
 
-
-async def setup(ctx, bot):  # when this method is completed it with write the channel id to channels.txt
+async def setup(ctx, bot) -> None:  # when this method is completed it with write the channel id to channels.txt
     """
     Uses a reaction poll to determine if the person wants to subscribe or unsubscribe from the announcements
 
-    :param ctx: context object
-    :param bot: connection
-    :return: None
+    :param ctx: context object for the message
+    :type ctx: Object
+    :param bot: client connection to discord
+    :type bot: Object
     """
     setup_poll = SetupPoll(['✅', '❌'], ctx.message.author, 'Auto-announcements')
     await setup_poll.create_poll_embed()
@@ -29,16 +30,21 @@ async def setup(ctx, bot):  # when this method is completed it with write the ch
     await setup_poll.sub_to_auto_announcements(bot, ctx)  # blocking
 
 
-async def alarm(time, content, ctx, pings):  # this gets looped to inside of an event loop
+async def alarm(time: datetime.time, content: str, ctx, pings: str) -> None:
     """
     This method is called inside of a loop, and it will continue to loop until the destination time is reached, then it
     will send out the alarm message (embed) and stop
 
-    :param time: datetime.time object
-    :param content: str, content of message
-    :param ctx: context object
-    :param pings: str, comma separated list of pings
-    :return: None
+    this gets looped to inside of an event loop
+
+    :param time: time that the alarm with go off
+    :type time: datetime.time object
+    :param content: content of the message
+    :type content: str
+    :param ctx: context object for the message
+    :type ctx: Object
+    :param pings: comma separated list of pings
+    :type pings: str
     """
     await ctx.channel.send("Alarm set!")
     while True:
@@ -56,16 +62,20 @@ async def alarm(time, content, ctx, pings):  # this gets looped to inside of an 
     await ctx.channel.send(content=None, embed=alarm_embed)
 
 
-async def check_for_errors(ctx, time, pings):
+async def check_for_errors(ctx, time: str, pings: str) -> (datetime.time, str):
     """
     This take all of the args given by the human on discord and checks them for errors, if there is and error it calls
-    the command_error method to notify the human what they have messed up, if it succeds then this wil take the time str
-    and convert it to a datetime.time object the parent method continues on normally
+    the command_error method to notify the human what they have messed up, if it succeeds then this wil take the time
+    str and convert it to a datetime.time object the parent method continues on normally
 
-    :param ctx: context object
-    :param time: str
-    :param pings: str, comma separated list of pings
-    :return: datetime.time, pings (str)
+    :param ctx: context object for the message
+    :type ctx: Object
+    :param time: time that will be converted into a datetime object
+    :type time: str
+    :param pings: comma separated list of pings
+    :type pings: str
+    :return: time of alarm, comma separated list of pings
+    :rtype: datetime.time, str
     """
     if time is None:
         await extras.command_error(ctx, '505', "Missing arg '-t'", missing_args='-t')
@@ -90,10 +100,14 @@ def create_event_embed(is_today: bool, events_exist: bool, num_days: int = None)
     not is_today and events_exist: embed for more then one day containing events
     not is_today and not events_exist: embed for more then one day, without events
 
-    :param is_today: bool
-    :param events_exist: bool
-    :param num_days: int
-    :return: embed
+    :param is_today: True if the events are only for today
+    :type is_today: bool
+    :param events_exist: True if there are events in the list
+    :type events_exist: bool
+    :param num_days: number of days the events are for
+    :type num_days: int
+    :return: embed for the message
+    :rtype: discord.Embed
     """
     if events_exist and is_today:
         embed = discord.Embed(
@@ -115,14 +129,16 @@ def create_event_embed(is_today: bool, events_exist: bool, num_days: int = None)
     return embed
 
 
-def get_events(days: int = None):
+def get_events(days: int = None) -> List[Event]:
     """
     First it sets up the api, then it gets the events from it, organizes the events by date, indexes the calendar by
     date, returns the events that are happening in the next `days` days, if you want events for today `days` should
     equal 0
 
-    :param days: int
-    :return: list
+    :param days: number of days the events cover
+    :type days: int
+    :return: list of events within the days specified
+    :rtype: List[Event]
     """
     api = CalendarAPI()
     api.start_api()
@@ -136,20 +152,24 @@ def get_events(days: int = None):
     return sliced_calendar
 
 
-async def events_by_day(days: str = None, ctx=None, events_exist: bool = False):
+async def events_by_day(ctx=None, days: str = None, events_exist: bool = False) -> (discord.Embed, Union[List, None]):
     """
     This creates an embed for any amount of days, and then returns it to the parent method to have the actual events
     added in, it raises a ValueError as a shortcut back, it also generates the list of events that the parent method
     will add to the embed
 
-    :param days: str
-    :param ctx: context
-    :param events_exist: bool
-    :return: discord.Embed, list
+    :param ctx: context object for the message
+    :type ctx: Object
+    :param days: days as imputed by user
+    :type days: str
+    :param events_exist: whether there are events for the time specified
+    :type events_exist: bool
+    :return: embed for message, list of events
+    :rtype: discord.Embed, List[Event]
     """
     if days.isdigit():
         event_list = get_events(int(days))
-        if event_list == empty_list:
+        if event_list == list():
             no_events = create_event_embed(False, False, num_days=days)
             if events_exist:
                 return no_events, None
@@ -161,18 +181,21 @@ async def events_by_day(days: str = None, ctx=None, events_exist: bool = False):
     raise ValueError
 
 
-async def events_today(ctx=None, events_exist: bool = False):
+async def events_today(ctx=None, events_exist: bool = False) -> (discord.Embed, Union[List, None]):
     """
     This creates an embed for only events happening today, and then returns it to the parent method to have the actual
     events added in, it raises a ValueError as a shortcut back, it also generates the list of events that the parent
     method will add to the embed
 
-    :param events_exist: bool, whether it is called from auto-announcements
-    :param ctx: context object
-    :return: discord.Embed, list
+    :param events_exist: whether there are events
+    :type events_exist: bool
+    :param ctx: context object for the message
+    :type ctx: Object
+    :return: embed for events, list of events
+    :rtype: discord.Embed, List[Event]
     """
     event_list = get_events(0)
-    if event_list == empty_list:
+    if event_list == list():
         no_events = create_event_embed(True, False)
         if events_exist:
             return no_events, None
@@ -187,26 +210,34 @@ def WHAT_TIME_IS_IT(question_mark: str) -> bool:
     Checks if it is 9:30, returns True if it is, it is at 13:30 because it runs on a Heroku server that is in a timezone
     4 hours behind EST
 
-    :param question_mark: literally just exists so when its called there is a question mark (str)
-    :return: bool
+    :param question_mark: literally just exists so when its called there is a question mark
+    :type question_mark: str (useless)
+    :return: whether its 9:30
+    :rtype: bool
     """
     return datetime.datetime.strptime('13:30', '%H:%M').time() <= datetime.datetime.now().time() <= \
         datetime.datetime.strptime('13:36', '%H:%M').time()
 
 
-async def manage_events(bot, ctx=None, today: bool = False, days: str = '14', auto: bool = True, channels: List[str] = None):
+async def manage_events(bot, ctx=None, today: bool = False, days: str = '14', auto: bool = True,
+                        channels: List[str] = None) -> Union[discord.Embed, None]:
     """
     Gets basic embed then either appends the events to it and sends it or sends an empty one saying that there are no
     events happening, it then iterates through all of the channels, creating the channel object from the channel ids and
     sends them to all of the channels saved in channels.txt
 
-    :param today: bool, if True then it send an embed that only contains today's events
-    :param channels: list (str), list of strings representing all of the channels that the announcement must be sent to
-    :param bot: connection to discord
-    :param ctx: context
-    :param days: str[int]
-    :param auto: bool
-    :return: None
+    :param today: if True then it send an embed that only contains today's events
+    :type today: bool
+    :param channels: list of strings representing all of the channels that the announcement must be sent to
+    :type channels: list[str]
+    :param bot: client connection to discord
+    :type bot: Object
+    :param ctx: context object for the message
+    :type ctx: Object
+    :param days: amount of days the data is for
+    :type days: str (int)
+    :param auto: True if this is being called by the auto-announcements
+    :type auto: bool
     """
     if today:  # get events for today
         event_embed, event_list = await events_today(events_exist=True)
@@ -233,28 +264,14 @@ async def manage_events(bot, ctx=None, today: bool = False, days: str = '14', au
         await channel.send(content=None, embed=event_embed)
 
 
-def read_channels():
-    """
-    returns a list of all of the channel ids saved to channels.txt
-
-    :return: list (str)
-    """
-    with open('cache/channels.txt', 'r') as f:  # reads channels.txt
-        channels = f.readlines()
-        for index, channel in enumerate(channels):
-            if channel == '\n':
-                channels.pop(index)
-    return channels
-
-
-async def auto_announcements(bot):
+async def auto_announcements(bot) -> None:
     """
     Loops inside of event loop, first it checks if it is 9:00 and if it is, it checks is it is sunday, on sundays it
     sends out a message covering events for the whole week, if is is just any other day, it will send out the message
     only covering that day
 
-    :param bot: connection to discord
-    :return: None (it just loops)
+    :param bot: client connection to discord
+    :type bot: Object
     """
     last_day = datetime.datetime.today() + datetime.timedelta(days=-1)  # creates a variable representing yesterday
     last_day = last_day.weekday()
@@ -262,7 +279,7 @@ async def auto_announcements(bot):
     while not bot.is_closed():  # loops as long as the bot is connected to discord
         if WHAT_TIME_IS_IT('?'):  # True if it is 9:30
             this_day = datetime.datetime.today().weekday()
-            channels = read_channels()  # reads channel ids
+            channels = clear_and_find_channels()  # reads channel ids
             # if it is sunday and it hasn't already sent a message
             if datetime.datetime.today().weekday() == 6 and this_day != last_day:
                 await manage_events(bot, today=False, channels=channels)

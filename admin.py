@@ -1,31 +1,36 @@
-# This is for admin based commands
+"""
+This is for admin based commands
+"""
+from typing import List
 
 
-def clear():
+def clear_and_find_channels() -> List[str]:
     """
     Clears channels.txt of any extra \n's and return a list of channel IDs
 
-    :return: list (str)
+    :return: list of all of the channel IDs
+    :rtype: List[str]
     """
-    with open('cache/channels.txt', 'rw') as f:
-        lines = f.read()
-        lines_list = lines.split('\n')
+    with open('cache/channels.txt', 'rw') as channels_file:
+        lines = channels_file.readlines()
         final_list = []
-        for line in lines_list:
+        for line in lines:
             if line != '':
                 final_list.append(line)
-        f.writelines(final_list)
+        channels_file.writelines(final_list)
     return final_list
 
 
-async def channels(bot, ctx):
+async def channels(bot, ctx) -> None:
     """
     Just for debugging, sends a list of the channel IDs and names stored in channels.txt
 
     :param bot: connection to discord
-    :return: None
+    :type bot: Object
+    :param ctx: context for message
+    :type ctx: Object
     """
-    channel_list = clear()
+    channel_list = clear_and_find_channels()
     chan_lst = []
     for channel in channel_list:
         channel_ = bot.get_channel(int(channel))
