@@ -1,6 +1,7 @@
 import discord
 
 from classes.PollBaseClass import PollBaseClass
+from admin import clear_and_find_channels
 
 
 class SetupPoll(PollBaseClass):
@@ -43,10 +44,9 @@ class SetupPoll(PollBaseClass):
         :return: None
         :rtype: None
         """
-        with open('cache/channels.txt', 'r') as f:  # reads all current ids on the text file (list)
-            channel_id_list = f.readlines()
+        channel_id_list = clear_and_find_channels()
 
-        if str(ctx.channel.id) in channel_id_list:  # checks if channels is already in the list
+        if ctx.channel.id in channel_id_list:  # checks if channels is already in the list
             await ctx.channel.send("This channel is already subscribed to the announcements")
             return
 

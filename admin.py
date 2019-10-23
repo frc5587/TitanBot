@@ -4,21 +4,22 @@ This is for admin based commands
 from typing import List
 
 
-def clear_and_find_channels() -> List[str]:
+def clear_and_find_channels() -> List[int]:
     """
     Clears channels.txt of any extra \n's and return a list of channel IDs
 
     :return: list of all of the channel IDs
-    :rtype: List[str]
+    :rtype: List[int]
     """
-    with open('cache/channels.txt', 'rw') as channels_file:
+    with open('cache/channels.txt', 'r+') as channels_file:
         lines = channels_file.readlines()
         final_list = []
         for line in lines:
-            if line != '':
+            if line not in ['', '\n']:
                 final_list.append(line)
+        channels_file.seek(0)  # sets pointer to the beginning of the file
         channels_file.writelines(final_list)
-    return final_list
+    return [int(channel) for channel in final_list]
 
 
 async def channels(bot, ctx) -> None:
@@ -30,9 +31,15 @@ async def channels(bot, ctx) -> None:
     :param ctx: context for message
     :type ctx: Object
     """
-    channel_list = clear_and_find_channels()
+    channel_list_int = clear_and_find_channels()
     chan_lst = []
-    for channel in channel_list:
-        channel_ = bot.get_channel(int(channel))
-        chan_lst.append(f"#{str(channel_)} ({channel_.id})")
+
+    if channel_list_int == list():
+        await ctx.channel.send("No channels are subscribed to announcements")
+        return
+
+    for channel_int in channel_list_int:
+        channel = bot.get_channel(channel_int)
+        chan_lst.append(f"#{str(channel)} ({channel.id})")
+
     await ctx.channel.send('\n'.join(chan_lst))

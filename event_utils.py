@@ -220,7 +220,7 @@ def WHAT_TIME_IS_IT(question_mark: str) -> bool:
 
 
 async def manage_events(bot, ctx=None, today: bool = False, days: str = '14', auto: bool = True,
-                        channels: List[str] = None) -> Union[discord.Embed, None]:
+                        channels: List[int] = None) -> Union[discord.Embed, None]:
     """
     Gets basic embed then either appends the events to it and sends it or sends an empty one saying that there are no
     events happening, it then iterates through all of the channels, creating the channel object from the channel ids and
@@ -229,7 +229,7 @@ async def manage_events(bot, ctx=None, today: bool = False, days: str = '14', au
     :param today: if True then it send an embed that only contains today's events
     :type today: bool
     :param channels: list of strings representing all of the channels that the announcement must be sent to
-    :type channels: list[str]
+    :type channels: list[int]
     :param bot: client connection to discord
     :type bot: Object
     :param ctx: context object for the message
@@ -260,7 +260,7 @@ async def manage_events(bot, ctx=None, today: bool = False, days: str = '14', au
     if not auto:
         return event_embed
     for channel in channels:
-        channel = bot.get_channel(int(channel))
+        channel = bot.get_channel(channel)
         await channel.send(content=None, embed=event_embed)
 
 

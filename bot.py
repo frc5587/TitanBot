@@ -188,7 +188,7 @@ async def test(ctx):
 
 @bot.command(name='setalarm')
 async def setalarm(ctx):
-    """
+    """TODO make this function better
     Creates and alarm that pings people specified at the time (24hr clock) specified. Currectly only works for the
     current day (it can't do any days in advance)
 
