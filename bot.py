@@ -24,7 +24,7 @@ extras.Commands('MakePoll', 'Makes a reaction style poll; you add in options aft
                 '-makepoll', 'Dev, Admin, FRC Leadership')
 extras.Commands('Events', 'Displays events from the team calendar for today unless an amount of days is specified',
                 '-events <O: num days>', 'None')
-extras.Commands('Channels', 'Lists which channels are subscribed to the auto announcements', '-channel', 'Dev')
+extras.Commands('Channels', 'Lists which channels are subscribed to the auto announcements', '-channels', 'Dev')
 extras.Commands('Setup', 'Starts the auto announcement system', '-setup', 'Dev, Admin, FRC Leadership')
 extras.Commands('Math',
                 "Solves math equations/expressions. "
