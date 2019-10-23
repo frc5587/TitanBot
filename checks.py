@@ -40,7 +40,7 @@ def is_admin(*roles: List[str]) -> check:
     if roles is None:
         roles = ["Administer"]
     else:
-        roles.append("Administrator")
+        roles.append("Administrator")  # just for te visuals, does not effect function
 
     async def decorator(ctx) -> bool:
         """
@@ -53,12 +53,12 @@ def is_admin(*roles: List[str]) -> check:
         """
         # are not they and admin, dev or have a role in roles
         if not (ctx.message.author.guild_permissions.administrator or ctx.message.author.id in devs or
-                any([i.name in [roles] for i in ctx.message.author.roles])):
+                any([role.name in roles for role in ctx.message.author.roles])):
             await bad_permissions(ctx, [i for i in roles])
 
         # are they and admin, dev or have a role in roles
         return ctx.message.author.guild_permissions.administrator or ctx.message.author.id in devs or\
-            any([i.name in [roles] for i in ctx.message.author.roles])
+            any([role.name in roles for role in ctx.message.author.roles])
     return check(decorator)
 
 

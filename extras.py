@@ -35,7 +35,7 @@ class Commands:
         Commands.command_str = ", ".join(Commands.command_list_name)
 
 
-async def command_error(ctx, error_code: str, reason: str, missing_args: str = None) -> None:
+async def command_error(ctx, error_code: str, reason: str, missing_args: str = None, command: str = None) -> None:
     """
     This send out an error message (embed) according to the error codes below
 
@@ -52,9 +52,11 @@ async def command_error(ctx, error_code: str, reason: str, missing_args: str = N
     :type reason: str
     :param missing_args: comma separated list
     :type missing_args: List[str]
+    :param command: the unfound command
+    :type command: str
     """
     error_codes = {
-        '404': f'The command {ctx.message.content[1:]} is not found, check -help if that command even exists, if it '
+        '404': f'The command {command} is not found, check -help if that command even exists, if it '
             f'does then please notify Johnny Wobble#1085 of this',
         '505': f'You are missing arg(s): {missing_args}, without this arg(s) the function will not work, refer to -help'
             f' if this error keeps popping up',

@@ -115,7 +115,6 @@ async def events(ctx):
         await ctx.channel.send(embed=embed, content=None)
     except Exception as eee:  # This is when it sends an error-based message to it can skip back
         print(eee)
-        return
 
 
 @checks.is_dev()
@@ -129,8 +128,10 @@ async def channel_test(ctx):
     :param ctx: context object for the message
     :type ctx: Object
     """
-
-    await admin.channels(bot, ctx)
+    try:
+        await admin.channels(bot, ctx)
+    except Exception as ee:
+        await ctx.channel.send(ee)
 
 
 @checks.is_admin('FRC Leadership')
@@ -144,7 +145,10 @@ async def setup(ctx):
     :param ctx: context object for the message
     :type ctx: Object
     """
-    await event_utils.setup(ctx, bot)
+    try:
+        await event_utils.setup(ctx, bot)
+    except Exception as ee:
+        await ctx.channel.send(ee)
 
 
 @bot.command(name='Math')
@@ -193,27 +197,30 @@ async def setalarm(ctx):
     :param ctx: context object for the message
     :type ctx: Object
     """
-    message_list = ctx.message.content.split()[1:]
-    static_message_list = message_list
-    pings = ""
-    time = None
-    for i in static_message_list:
-        if i == '-t':
-            index = message_list.index(i)+1
-            time = message_list[index]
-            message_list[index-1] = None
-            message_list[index] = None
-        elif i == '-p':
-            index = message_list.index(i)+1
-            pings += f"{message_list[index]} "
-            message_list[index - 1] = None
-            message_list[index] = None
-    time, pings = events.check_for_errors(ctx, time, pings)
-    reminder = ""
-    for i in message_list:
-        if i is not None:
-            reminder += f"{i} "
-    bot.loop.create_task(events.alarm(time, reminder, ctx, pings))
+    try:
+        message_list = ctx.message.content.split()[1:]
+        static_message_list = message_list
+        pings = ""
+        time = None
+        for i in static_message_list:
+            if i == '-t':
+                index = message_list.index(i) + 1
+                time = message_list[index]
+                message_list[index-1] = None
+                message_list[index] = None
+            elif i == '-p':
+                index = message_list.index(i) + 1
+                pings += f"{message_list[index]} "
+                message_list[index - 1] = None
+                message_list[index] = None
+        time, pings = await event_utils.check_for_errors(ctx, time, pings)
+        reminder = ""
+        for i in message_list:
+            if i is not None:
+                reminder += f"{i} "
+        bot.loop.create_task(event_utils.alarm(time, reminder, ctx, pings))
+    except Exception as qw:
+        print(qw)
 
 
 @bot.command(name='help')
@@ -246,7 +253,7 @@ async def on_command_error(ctx, error):
     :type error: Exception
     """
     if isinstance(error, commands.errors.CommandNotFound):
-        await extras.command_error(ctx, '404', 'command not found')
+        await extras.command_error(ctx, '404', 'command not found', command=ctx.message.content[1:])
 
 
 async def server_list() -> None:
