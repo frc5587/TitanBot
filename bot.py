@@ -20,22 +20,22 @@ bot.remove_command("help")
 # listing commands for the help command
 
 extras.Commands('Die', 'Kills the bot', '-die', 'Dev')
-extras.Commands('MakePoll', 'Make a reaction style poll, you add in options after you send the -makepoll command',
+extras.Commands('MakePoll', 'Makes a reaction style poll; you add in options after you send the -makepoll command',
                 '-makepoll', 'Dev, Admin, FRC Leadership')
-extras.Commands('Events', 'Displays events from the team calendar for today unless specified for how many days',
+extras.Commands('Events', 'Displays events from the team calendar for today unless an amount of days is specified',
                 '-events <O: num days>', 'None')
-extras.Commands('Channels', 'Lets you know which channels are subscribed to the auto announcements', '-channel', 'Dev')
+extras.Commands('Channels', 'Lists which channels are subscribed to the auto announcements', '-channel', 'Dev')
 extras.Commands('Setup', 'Starts the auto announcement system', '-setup', 'Dev, Admin, FRC Leadership')
 extras.Commands('Math',
-                "Solves math equations/expressions, "
-                "use the flag '-v' to specify the variable that you may want to solve for",
+                "Solves math equations/expressions. "
+                "Use the flag '-v' to specify the variable that you want to solve for",
                 '-math <expression/equation> O: -v <variable to solve for>', 'None')
-extras.Commands('Test', 'Used to check if bot is running, says "Confirmed." if so', '-test', 'None')
-extras.Commands('SetAlarm', "Sets an alarm to happen at time specified by '-t' (HH:MM, 24 hour clock) and to ping "
-                            "anything specified by '-p', if you want to ping multiple people use '-p' multiple times,"
-                            "\nPlease note 12am, which would be 24:00 is expressed as 00:00, ",
+extras.Commands('Test', 'Used to check if bot is running; says "Confirmed." if so', '-test', 'None')
+extras.Commands('SetAlarm', "Sets an alarm to happen at the time specified by '-t' (HH:MM, 24 hour clock) and pings"
+                            "anything specified by ‘-p’. If you want to ping multiple people use '-p' multiple times."
+                            "\nPlease note that 12am, which would be 24:00, is expressed as 00:00",
                 '-setalarm -t <HH:MM> -p <@mention>', 'None')
-extras.Commands('Help', "Shows the help box, if you want specific help, do '-help <command>", '-help O: <command>',
+extras.Commands('Help', "Shows the help box. To learn more about specific commands, do '-help <command>'", '-help <O: command>',
                 'None')
 
 
@@ -154,7 +154,7 @@ async def setup(ctx):
 @bot.command(name='Math')
 async def math(ctx):
     """
-    Solves either a math equation or expression, it can hang if the expression is too complex, e.g. 5587^5587^5587
+    Solves either a math equation or expression. It can hang if the expression is too complex, e.g. 5587^5587^5587
 
     Permissions needed: None
 
@@ -177,20 +177,20 @@ async def math(ctx):
 @bot.command(name='test')
 async def test(ctx):
     """
-    Confirmation that the bot is up, and local time
+    Confirmation that the bot is up and local time
 
     Permissions needed: None
 
     :param ctx: context object for the message
     :type ctx: Object    """
-    await ctx.channel.send(f"Confirmed.\nLocal Time: {datetime.datetime.now().strftime('%H:%M:%S')}")
+    await ctx.channel.send(f"Confirmed.\nLocal time: {datetime.datetime.now().strftime('%H:%M:%S')}")
 
 
 @bot.command(name='setalarm')
 async def setalarm(ctx):
     """
-    Creates and alarm that pings people specified, and at the time (24hr clock) specified, currectly only works for the
-    current day set, it can't do any days in advance
+    Creates and alarm that pings people specified at the time (24hr clock) specified. Currectly only works for the
+    current day (it can't do any days in advance)
 
     Permissions needed: None
 
@@ -245,7 +245,7 @@ async def helper(ctx):
 @bot.event
 async def on_command_error(ctx, error):
     """
-    called when some uses the prefix on something that isn't a command
+    called when someone uses the prefix on something that isn't a command
 
     :param ctx: context object for the message
     :type ctx: Object
