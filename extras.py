@@ -94,7 +94,7 @@ async def specific_help(ctx, help_command: str) -> None:
 
     error_embed = discord.Embed(  # tells user that the command doesn't exist
         title='Error 404: command not found',
-        description=f'The command {ctx.message.content.split()[1]} is not found, check -help if that command exist, '
+        description=f'The command {ctx.message.content.split()[1]} is not found, check -help to see if that command exists; '
                     f'if it does then please notify Johnny Wobble#1085 or Brendan Doney#2365 of this',
         color=discord.Color.from_rgb(255, 0, 0))
 
@@ -113,9 +113,9 @@ async def helper(ctx) -> None:
     else:
         embed = discord.Embed(
             title='Help',
-            description='- is the prefix,\ngeneral format: -<command>  <O: conditional statement(s)>\n',
+            description='prefix: -\ngeneral format: -<command>  <O: additional argument(s)>\n',
             color=discord.Color.from_rgb(67, 0, 255)
         )
         embed.set_footer(text='O: means that the arg is optional')
-        embed.add_field(name="list of commands", value=Commands.command_str, inline=True)
+        embed.add_field(name="Commands", value=Commands.command_str, inline=True)
         await ctx.channel.send(content=None, embed=embed)
