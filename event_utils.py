@@ -244,12 +244,31 @@ async def manage_events(bot, ctx=None, today: bool = False, days: str = '14', au
     else:  # gets events for the next week
         event_embed, event_list = await events_by_day(ctx=ctx, days=days, events_exist=True)
     if event_list is not None:  # if the event_list is None it will just send the embed saying that there are no events
-        for event in event_list:  # iteratively adds events to embed
-            if event.start_time is None:  # for events without a time
+        for num, event in enumerate(event_list):  # iteratively adds events to embed
+
+            if event.date == event_list[num - 1].date:  # for events that are on the same day of the previous one
+                index = len(event_embed.fields) - 1
+                value = event_embed.fields[index].value
+
+                if event.start_time is None:   # for events without a time
+                    add = f"➤ {event.title} "\
+                          f"{f'- {event.description}' if event.description is not None else ''}"
+
+                else:  # for events with a time
+                    add = f"➤ {event.title} "\
+                          f"{f'- {event.description}' if event.description is not None else ''}\n"\
+                          f"━➤ *{event.start_time.strftime('%I:%M %p')} to "\
+                          f"{event.end_time.strftime('%I:%M %p')}*"
+
+                event_embed.set_field_at(index, name=event.date.strftime("%A (%m/%d/%y)"), value=f"{value}\n{add}")
+                continue
+
+            elif event.start_time is None:  # for events without a time
                 event_embed.add_field(name=event.date.strftime("%A (%m/%d/%y)"),
                                       value=f"➤ {event.title} "
                                             f"{f'- {event.description}' if event.description is not None else ''}",
                                       inline=False)
+
             else:  # for events with a time
                 event_embed.add_field(name=event.date.strftime("%A (%m/%d/%y)"),
                                       value=f"➤ {event.title} "
