@@ -7,7 +7,7 @@ import datetime
 import event_utils
 import extras
 import checks
-import polls
+from classes import polls
 import admin
 from math_equ import math_main
 from tokens import read_discord_token
@@ -82,10 +82,15 @@ async def make_poll(ctx):
         poll = polls.Poll([emoji for role, emoji in action_list],
                           [role for role, emoji in action_list],
                           msg.author, msg.content)
-        embed, poll = await polls.create_poll_embed(poll)
-        poll.message = await ctx.channel.send(content=None, embed=embed)
-        await poll.add_reactions()
-        await poll.reaction_watch_loop(bot)
+        await poll.run(ctx, bot)
+        # embed, poll = await polls.create_poll_embed(poll)
+        # poll.message = await ctx.channel.send(content=None, embed=embed)
+        # await poll.add_reactions()
+        # try:
+        #     await poll.save(bot)
+        # except Exception as e:
+        #     await ctx.channel.send(e)
+        # await poll.reaction_watch_loop(bot)
 
     except Exception as E:
         await ctx.channel.send(E)
@@ -163,9 +168,9 @@ async def math(ctx):
     """
     await ctx.channel.trigger_typing()
     try:
-        answers, equ = math_main(ctx.message.content)
+        answers, print_equ = math_main(ctx.message.content)
         math_embed = discord.Embed(
-            title=f"`{equ}`",
+            title=f"`{print_equ}`",
             color=discord.Color.from_rgb(67, 0, 255),
             description=''.join(answers)
         )
@@ -189,7 +194,7 @@ async def test(ctx):
 @bot.command(name='setalarm')
 async def setalarm(ctx):
     """TODO make this function better
-    Creates and alarm that pings people specified at the time (24hr clock) specified. Currectly only works for the
+    Creates and alarm that pings people specified at the time (24hr clock) specified. Currently only works for the
     current day (it can't do any days in advance)
 
     Permissions needed: None
@@ -288,7 +293,26 @@ async def game_presence() -> None:
             print(exc)
             continue
 
-bot.loop.create_task(event_utils.auto_announcements(bot))
-bot.loop.create_task(game_presence())
-bot.loop.create_task(server_list())
-bot.run(token)
+# @bot.
+
+
+@bot.command(name="run")
+async def run(ctx):
+    try:
+        await polls.Poll.runall(bot)
+    except Exception as e:
+        await ctx.channel.send(e)
+
+
+def startup(bot):
+    bot.loop.create_task(event_utils.auto_announcements(bot))
+    bot.loop.create_task(game_presence())
+    bot.loop.create_task(server_list())
+    bot.loop.create_task(polls.Poll.loadall(bot))
+
+
+    bot.run(token)
+
+
+if __name__ == "__main__":
+    startup(bot)
