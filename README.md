@@ -28,8 +28,8 @@ Because this bot decrypts the tokens with a bash script called with `./` it is o
 Making a discord bot is pretty simple, you just have to follow these steps.
 1. Log onto the [discord developer portal](https://discordapp.com/login?redirect_to=%2Fdevelopers%2Fapplications%2F) with whatever account you want to own the bot
 2. Hit `new application` on the top right corner
-⋅⋅⋅1. asdfsadf
-⋅⋅⋅2. adfasdf
+-1. asdfsadf
+-2. adfasdf
 
 ## Deploying to Heroku
 
