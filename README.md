@@ -16,10 +16,16 @@ First, from the base of the this repository, install all of the dependencies for
 pip3 install -r requirements.txt
 ```
 
-Then, to start the bot, use
+Then, to start the bot, use (python >3.5 required)
 
 ```bash
 python3 bot.py
 ```
+Because this bot decrypts the tokens with a bash script, that is called with `./` it is only compatible with linux; unless your tokens are 
+not encrypted, then it will work fine on Windows.
+
+## Setting up for Heroku
 
 A Procfile is provided if you are deploying to Heroku.
+
+![]
