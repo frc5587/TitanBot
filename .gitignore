@@ -156,7 +156,7 @@ discord-token.*
 !*.gpg
 
 # Cache files
-cache/
+cache/*
 
 # Pycharm
 .idea/
