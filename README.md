@@ -91,5 +91,4 @@ We have done most of the configuration necessary for deploying to Heroku, we hav
 9. You should be good, set your bot to run, and bathe in it's majestic glory!
 
 
-
-If you have any problems with any of these steps you can make an issue on the TitanBot repository or DM Johnny Wobble#1085
+###### If you have any problems with any of these steps you can make an issue on the TitanBot repository or DM Johnny Wobble#1085
