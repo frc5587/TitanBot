@@ -2,9 +2,16 @@ import discord
 from discord.ext.commands import check
 from typing import List
 
+with open("cache/devs.txt", "r") as file:
+    dev_list = file.readlines()
 
-devs = [359794541257162753,  # Max Gordon
-        248914785888894976]  # Brendan Doney
+devs = []
+
+for dev_str in dev_list:
+    devs.append(int(dev_str))
+
+# 359794541257162753  # Max Gordon
+# 248914785888894976  # Brendan Doney
 
 
 async def bad_permissions(ctx, permissions: List[str]) -> None:
