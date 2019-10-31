@@ -174,18 +174,6 @@ async def math(ctx):
         await ctx.channel.send(f"Well, You did something wrong\n`{e}`")
 
 
-@bot.command(name='test')
-async def test(ctx):
-    """
-    Confirmation that the bot is up and local time
-
-    Permissions needed: None
-
-    :param ctx: context object for the message
-    :type ctx: Object    """
-    await ctx.channel.send(f"Confirmed.\nLocal time: {datetime.datetime.now().strftime('%H:%M:%S')}")
-
-
 @bot.command(name='setalarm')
 async def setalarm(ctx):
     """TODO make this function better
@@ -239,9 +227,6 @@ async def helper(ctx):
         print(e)
 
 
-# ---------- End of commands -------------
-
-
 @bot.event
 async def on_command_error(ctx, error):
     """
@@ -254,6 +239,25 @@ async def on_command_error(ctx, error):
     """
     if isinstance(error, commands.errors.CommandNotFound):
         await extras.command_error(ctx, '404', 'command not found', command=ctx.message.content[1:])
+
+
+# ---------- End of commands -------------
+
+
+@checks.get_args(0, None)
+@bot.command(name='test')
+async def test(ctx, args):
+    """
+    Confirmation that the bot is up and local time
+
+    Permissions needed: None
+
+    :param ctx: context object for the message
+    :type ctx: Object
+    """
+    print(1234567)
+    print(args)
+    await ctx.channel.send(f"Confirmed.\nLocal time: {datetime.datetime.now().strftime('%H:%M:%S')}")
 
 
 async def server_list() -> None:
@@ -291,4 +295,6 @@ async def game_presence() -> None:
 bot.loop.create_task(event_utils.auto_announcements(bot))
 bot.loop.create_task(game_presence())
 bot.loop.create_task(server_list())
+
+
 bot.run(token)

@@ -57,9 +57,9 @@ async def command_error(ctx, error_code: str, reason: str, missing_args: str = N
     """
     error_codes = {
         '404': f'The command {command} is not found, check -help if that command even exists, if it '
-            f'does then please notify Johnny Wobble#1085 of this',
+               f'does then please notify Johnny Wobble#1085 of this',
         '505': f'You are missing arg(s): {missing_args}, without this arg(s) the function will not work, refer to -help'
-            f' if this error keeps popping up',
+               f' if this error keeps popping up',
         '606': 'The expression/equation that you imputed could not be solved due to a complexity error',
         '707': 'Check your args, one or more may not be correct'}
     error_embed = discord.Embed(
