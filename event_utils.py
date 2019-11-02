@@ -152,7 +152,7 @@ def get_events(days: int = None) -> List[Event]:
     return sliced_calendar
 
 
-async def events_by_day(ctx=None, days: str = None, events_exist: bool = False) -> (discord.Embed, Union[List, None]):
+async def events_by_day(ctx=None, days: int = None, events_exist: bool = False) -> (discord.Embed, Union[List, None]):
     """
     This creates an embed for any amount of days, and then returns it to the parent method to have the actual events
     added in, it raises a ValueError as a shortcut back, it also generates the list of events that the parent method
@@ -167,18 +167,15 @@ async def events_by_day(ctx=None, days: str = None, events_exist: bool = False) 
     :return: embed for message, list of events
     :rtype: discord.Embed, List[Event]
     """
-    if days.isdigit():
-        event_list = get_events(int(days))
-        if event_list == list():
-            no_events = create_event_embed(False, False, num_days=days)
-            if events_exist:
-                return no_events, None
-            await ctx.channel.send(content=None, embed=no_events)
-            raise ValueError
-        event_embed = create_event_embed(False, True, num_days=days)
-        return event_embed, event_list
-    await extras.command_error(ctx, '707', 'Days specified is not a number')
-    raise ValueError
+    event_list = get_events(days)
+    if event_list == list():
+        no_events = create_event_embed(False, False, num_days=days)
+        if events_exist:
+            return no_events, None
+        await ctx.channel.send(content=None, embed=no_events)
+        raise ValueError
+    event_embed = create_event_embed(False, True, num_days=days)
+    return event_embed, event_list
 
 
 async def events_today(ctx=None, events_exist: bool = False) -> (discord.Embed, Union[List, None]):
@@ -219,7 +216,7 @@ def WHAT_TIME_IS_IT(question_mark: str) -> bool:
         datetime.datetime.strptime('13:36', '%H:%M').time()
 
 
-async def manage_events(bot, ctx=None, today: bool = False, days: str = '14', auto: bool = True,
+async def manage_events(bot, ctx=None, today: bool = False, days: int = 14, auto: bool = True,
                         channels: List[int] = None) -> Union[discord.Embed, None]:
     """
     Gets basic embed then either appends the events to it and sends it or sends an empty one saying that there are no
@@ -246,7 +243,8 @@ async def manage_events(bot, ctx=None, today: bool = False, days: str = '14', au
     if event_list is not None:  # if the event_list is None it will just send the embed saying that there are no events
         for num, event in enumerate(event_list):  # iteratively adds events to embed
 
-            if event.date == event_list[num - 1].date:  # for events that are on the same day of the previous one
+            # for events that are on the same day of the previous one
+            if event.date == event_list[num - 1].date and len(event_list) > 1:
                 index = len(event_embed.fields) - 1
                 value = event_embed.fields[index].value
 
@@ -305,7 +303,7 @@ async def auto_announcements(bot) -> None:
                 last_day = this_day
                 await asyncio.sleep(9999)
             elif this_day != last_day:  # if it is not sunday and hasn't already sent a message
-                await manage_events(bot, days='3', channels=channels)
+                await manage_events(bot, days=3, channels=channels)
                 last_day = this_day
                 await asyncio.sleep(9999)
         await asyncio.sleep(60)

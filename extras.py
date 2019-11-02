@@ -61,7 +61,8 @@ async def command_error(ctx, error_code: str, reason: str, missing_args: str = N
         '505': f'You are missing arg(s): {missing_args}, without this arg(s) the function will not work, refer to -help'
                f' if this error keeps popping up',
         '606': 'The expression/equation that you imputed could not be solved due to a complexity error',
-        '707': 'Check your args, one or more may not be correct'}
+        '707': 'Check your args, one or more may not be correct',
+        '808': 'Incorrect number of args'}
     error_embed = discord.Embed(
         title=f'Error {error_code}: {reason}',
         description=error_codes.get(error_code),
@@ -89,29 +90,30 @@ async def specific_help(ctx, help_command: str) -> None:
 
             help_command_embed.add_field(name="Syntax", value=command.syntax)
             help_command_embed.add_field(name="Permissions needed",
-                                         value=f"You need any one of these to use the command\n{command.permissions}")
+                                         value=command.permissions)
             help_command_embed.set_footer(text='O: means that the arg is optional')
             await ctx.channel.send(content=None, embed=help_command_embed)
             return
 
     error_embed = discord.Embed(  # tells user that the command doesn't exist
         title='Error 404: command not found',
-        description=f'The command {ctx.message.content.split()[1]} is not found, check -help to see if that command exists; '
+        description=f'The command {ctx.message.content.split()[1]} is not found, '
+                    f'check -help to see if that command exists; '
                     f'if it does then please notify Johnny Wobble#1085 or Brendan Doney#2365 of this',
         color=discord.Color.from_rgb(255, 0, 0))
 
     await ctx.channel.send(content=None, embed=error_embed)
 
 
-async def helper(ctx) -> None:
+async def helper(ctx, user_arg) -> None:
     """
     Sends the help embed, can also give specific help of a given command
 
     :param ctx: context object of the message
     :type ctx: Object
     """
-    if len(ctx.message.content.split()) > 1:
-        await specific_help(ctx, ctx.message.content.split()[1].lower())
+    if len(user_arg) > 1:
+        await specific_help(ctx, user_arg[1].lower())
     else:
         embed = discord.Embed(
             title='Help',
