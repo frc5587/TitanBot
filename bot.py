@@ -243,21 +243,26 @@ async def on_command_error(ctx, error):
 
 # ---------- End of commands -------------
 
+try:
+    @checks.GetArgs(0, None)
+    @bot.command(name='test')
+    async def test(ctx, args):
+        """
+        Confirmation that the bot is up and local time
 
-@checks.get_args(0, None)
-@bot.command(name='test')
-async def test(ctx, args):
-    """
-    Confirmation that the bot is up and local time
+        Permissions needed: None
 
-    Permissions needed: None
-
-    :param ctx: context object for the message
-    :type ctx: Object
-    """
-    print(1234567)
-    print(args)
-    await ctx.channel.send(f"Confirmed.\nLocal time: {datetime.datetime.now().strftime('%H:%M:%S')}")
+        :param ctx: context object for the message
+        :type ctx: Object
+        """
+        try:
+            print(1234567)
+            print(args)
+            await ctx.channel.send(f"Confirmed.\nLocal time: {datetime.datetime.now().strftime('%H:%M:%S')}")
+        except Exception as ee:
+            print(ee)
+except Exception as e:
+    print(e)
 
 
 async def server_list() -> None:

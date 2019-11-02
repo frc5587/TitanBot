@@ -87,40 +87,16 @@ def is_dev() -> check:
 
 # Union[str, int, float
 class GetArgs:
-    def __init(self, num_args: int, arg_type: List[Any]):
+    def __init__(self, num_args, arg_type):
+        print("***")
         self.num_args = num_args
         self.arg_type = arg_type
 
     def __call__(self, func):
+        print("******")
         async def wrapper(ctx, *args, **kwargs):
-
-            open_str = False
-
-            arg_list = []
-            sub_arg_list = []
-
-            for word in ctx.message.content.split():
-                if word.startswith("\"") or word.endwith("\""):
-                    if open_str:
-                        open_str = False
-                        arg_list.append(" ".join(sub_arg_list))
-                        sub_arg_list = []
-                    if not open_str:
-                        open_str = True
-                        sub_arg_list.append(word[1:])
-                elif open_str:
-                    sub_arg_list.append(word)
-                else:
-                    arg_list.append(word)
-
-            if open_str:
-                await extras.command_error(ctx, '707', "Arg was never closed with \"")
-                return None
-            await func(ctx)
-
-            print(arg_list)
-
-
+            print("**************************")
+            return await func(ctx, None)
         return wrapper
 
 
@@ -134,40 +110,106 @@ class GetArgs:
 #         func(ctx)
 #     return decorator
 
+#
+# def get_args(num_args: int, arg_type: List[Any]):
+#     def get_func(func):
+#         @functools.wraps(func)
+#         async def wrapper(ctx):
+#             return await func(ctx, [])
+#
+#         return wrapper
+#     return get_func
+#
+#     open_str = False
+#
+#     arg_list = []
+#     sub_arg_list = []
+#
+#     for word in ctx.message.content.split():
+#         if word.startswith("\"") or word.endwith("\""):
+#             if open_str:
+#                 open_str = False
+#                 arg_list.append(" ".join(sub_arg_list))
+#                 sub_arg_list = []
+#             if not open_str:
+#                 open_str = True
+#                 sub_arg_list.append(word[1:])
+#         elif open_str:
+#             sub_arg_list.append(word)
+#         else:
+#             arg_list.append(word)
+#
+#     if open_str:
+#         await
+#         extras.command_error(ctx, '707', "Arg was never closed with \"")
+#         return None
+#     await
+#     func(ctx)
+#
+#     print(arg_list)
 
-def get_args(num_args: int, arg_type: List[Any]):
-    try:
-        def get_func(func):
-            async def wrapper(ctx):
-                print("3")
-                open_str = False
 
-                arg_list = []
-                sub_arg_list = []
 
-                for word in ctx.message.content.split():
-                    if word.startswith("\"") or word.endwith("\""):
-                        if open_str:
-                            open_str = False
-                            arg_list.append(" ".join(sub_arg_list))
-                            sub_arg_list = []
-                        if not open_str:
-                            open_str = True
-                            sub_arg_list.append(word[1:])
-                    elif open_str:
-                        sub_arg_list.append(word)
-                    else:
-                        arg_list.append(word)
 
-                if open_str:
-                    await extras.command_error(ctx, '707', "Arg was never closed with \"")
-                    return None
-                print(arg_list + "\n" + sub_arg_list)
-                await ctx.channel.send(arg_list + "\n" + sub_arg_list)
-                print(arg_list)
-                await func(ctx, arg_list)
-            return wrapper
-    except Exception as e:
-        print(e)
-        raise SystemExit("*******************")
-    return get_func
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        # print("3")
+        # open_str = False
+        #
+        # arg_list = []
+        # sub_arg_list = []
+        #
+        # for word in ctx.message.content.split():
+        #     if word.startswith("\"") or word.endwith("\""):
+        #         if open_str:
+        #             open_str = False
+        #             arg_list.append(" ".join(sub_arg_list))
+        #             sub_arg_list = []
+        #         if not open_str:
+        #             open_str = True
+        #             sub_arg_list.append(word[1:])
+        #     elif open_str:
+        #         sub_arg_list.append(word)
+        #     else:
+        #         arg_list.append(word)
+        #
+        # if open_str:
+        #     await extras.command_error(ctx, '707', "Arg was never closed with \"")
+        #     return None
+        # print(arg_list + "\n" + sub_arg_list)
+        # await ctx.channel.send(arg_list + "\n" + sub_arg_list)
+        # print(arg_list)
