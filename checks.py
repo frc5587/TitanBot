@@ -4,7 +4,7 @@ from typing import List, Type, Callable, Union
 
 import extras
 
-with open("cache/devs.txt", "r") as file:
+with open("config/devs.txt", "r") as file:
     dev_list = file.readlines()
 
 devs = []

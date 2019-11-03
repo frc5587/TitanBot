@@ -28,9 +28,12 @@ python3 bot.py
 Because this bot decrypts the tokens with a bash script called with `./` it is only compatible with linux (without modifying the code). Unless your tokens are not encrypted, then it will work just fine on Windows. If you store it on a public repository you must encrypt the google and discord tokens/credentials because both have web scrapers looking for unencrypted tokens, and they will deactivate your token if they notice the security breach.
 
 One final thing you ar going to want to do is add yourself as a dev to the bot, this will allow you to use any dev based commands like `-die` which ends the bot
-1. Create a folder called `cache` in the root of the project
-2. Make a file called `devs.txt`
-3. Copy your discord user ID into the file, if you want to add anyone else, just add their IDs as well, each one on a new line
+1. In the `config/` folder, open up `devs.txt`
+2. Replace the current user IDs in `devs.txt` with the user IDs of anyone you want to have access to the "developer" commands (`-die`, `-channels`), and also access to all other commands, ony one ID per line
+
+Our discord server is setup so that our members in leadership have a role called `FRC Leadership`, this bot references that role to give them access to `-makepoll` and `-setup`, so to utilize this, you either change the code at lines 80 and 162 in bot.py, to whatever role you have distinguish you leadership members, or just give them a role called `FRC Leadership`
+
+Keep in mind, anyone with admin permissions can use all of the commands whether they have `FRC Leadership` or not, except for the dev commands. And devs can use all of the commands
 
 Also at anytime you can run `-help` to see a list of commands, and `-help <specific command>` to see any details on that command
 

@@ -5,6 +5,7 @@ import datetime
 import discord
 import asyncio
 from typing import List, Union
+import os
 
 import extras
 from admin import clear_and_find_channels
@@ -285,7 +286,7 @@ async def auto_announcements(bot) -> None:
     """
     Loops inside of event loop, first it checks if it is 9:00 and if it is, it checks is it is sunday, on sundays it
     sends out a message covering events for the whole week, if is is just any other day, it will send out the message
-    only covering that day
+    only covering that day. It will also create the channel cache if it does not already exist.
 
     :param bot: client connection to discord
     :type bot: Object
