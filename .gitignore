@@ -157,3 +157,6 @@ discord-token.*
 
 # Cache files
 cache/
+
+# Pycharm
+.idea/
