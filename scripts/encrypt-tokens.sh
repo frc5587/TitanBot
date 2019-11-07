@@ -9,19 +9,19 @@ token_dir="./tokens"
 # --batch to prevent interactive command --yes to assume "yes" for questions
 if [ "$1" = "discord" ] || [ "$1" = "all" ]; then
     echo "Encrypting Discord token..."
-    gpg --quiet --batch --yes --passphrase "$TOKEN_DECRYPT_PASS" --symmetric \
+    gpg --quiet --batch --yes --passphrase "$2" --symmetric \
         --cipher-algo AES256 "$token_dir/discord-token.txt"
 fi
 
 if [ "$1" = "calendar" ] || [ "$1" = "all" ]; then
     echo "Encrypting Google Calendar credentials..."
-    gpg --quiet --batch --yes --passphrase "$TOKEN_DECRYPT_PASS" --symmetric \
+    gpg --quiet --batch --yes --passphrase "$2" --symmetric \
         --cipher-algo AES256 "$token_dir/calendar-credentials.json"
 fi
 
 if [ "$1" = "gtoken" ] || [ "$1" = "all" ]; then
     echo "Encrypting Google token..."
-    gpg --quiet --batch --yes --passphrase "$TOKEN_DECRYPT_PASS" --symmetric \
+    gpg --quiet --batch --yes --passphrase "$2" --symmetric \
         --cipher-algo AES256 "$token_dir/calendar-token.pickle"
 fi
 

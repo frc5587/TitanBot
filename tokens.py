@@ -136,8 +136,7 @@ def attempt_decrypt(encrypted_file: str, decrypt_type: str) -> None:
 
     # Look for encrypted token
     if not os.path.exists(encrypted_file):
-        raise FileNotFoundError(
-            f"Unable to find encrypted discord token `{encrypted_file}`")
+        raise FileNotFoundError(f"Unable to find encrypted discord token `{encrypted_file}`")
 
     # Run decrypt script
     decrypt_command = ["./scripts/decrypt-tokens.sh", decrypt_type]
