@@ -313,6 +313,9 @@ async def game_presence() -> None:
             continue
 
 
+admin.make_channel_cache()
+checks.load_devs_config()
+
 bot.loop.create_task(event_utils.auto_announcements(bot))
 bot.loop.create_task(game_presence())
 bot.loop.create_task(server_list())

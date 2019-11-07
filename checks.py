@@ -1,14 +1,22 @@
-from typing import List
-
 import discord
+import json
 from discord.ext.commands import check
 from typing import List, Type, Callable, Union
 
 
 DEVS = []
-with open("cache/devs.txt", "r") as file:
-    for dev_str in file.readlines():
-        DEVS.append(int(dev_str))
+
+
+def load_devs_config():
+    """
+    It parses config.json for the list of devs, then it updates the global constant DEVS with the list of IDs
+    """
+    global DEVS
+    with open("config.json", "a+") as file:
+        file.seek(0)  # set pointer to the beginning
+        devs_dict = json.load(file)
+        dev_list = devs_dict.get("devs")
+        DEVS = dev_list if dev_list is not None else []
 
 
 async def bad_permissions(ctx, permissions: List[str]) -> None:
