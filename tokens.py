@@ -1,9 +1,10 @@
 import os.path
-import sys
-import subprocess
-from google_auth_oauthlib.flow import InstalledAppFlow
 import pickle
+import subprocess
+import sys
 from typing import List
+
+from google_auth_oauthlib.flow import InstalledAppFlow
 
 
 def read_discord_token() -> str:
@@ -29,15 +30,15 @@ def read_discord_token() -> str:
 
     # Check that decrypted tokens exist now
     if os.path.exists(unencrypted_file):
-        with open(unencrypted_file, "r") as f:
-            lines = f.readlines()
+        with open(unencrypted_file, "r") as file:
+            lines = file.readlines()
             return lines[0].strip()
 
     # No token files (encrypted or otherwise) or on Windows and can't decrypt, so throw error
     raise RuntimeError("Could not fetch Discord bot token")
 
 
-def read_calendar_credentials(SCOPES: List[str]) -> InstalledAppFlow:
+def read_calendar_credentials(scopes: List[str]) -> InstalledAppFlow:
     """
     Fetches the InstalledAppFlow for the Google Calendar credentials.
 
@@ -65,7 +66,7 @@ def read_calendar_credentials(SCOPES: List[str]) -> InstalledAppFlow:
     # Check that decrypted tokens exist now and return it
     if os.path.exists(unencrypted_file):
         return InstalledAppFlow.from_client_secrets_file(
-            'tokens/calendar-credentials.json', SCOPES)
+            'tokens/calendar-credentials.json', scopes)
 
     # No token files (encrypted or otherwise) or on Windows and can't decrypt, so throw error
     raise RuntimeError("Could not fetch Google Calendar credentials")
@@ -104,16 +105,26 @@ def read_google_token() -> pickle:
 
 
 def should_attempt_decrypt(unencrypted_file: str) -> bool:
+    """Determine whether an attempt to decrypt a token should be
+    made, or if the token can be read now.
+
+    :param unencrypted_file: the path that should lead to the unencrypted file
+    :type unencrypted_file: str
+    :return: whether to attempt decryption
+    :rtype: bool
+    """
     return not os.path.exists(unencrypted_file) and sys.platform in [
         "posix", "darwin", "linux"
     ]
 
 
 def attempt_decrypt(encrypted_file: str, decrypt_type: str) -> None:
-    """Attempts to decrypt the encrypted file provided by passing the decrypt type provided into `decrypt-tokens.sh`.
+    """Attempts to decrypt the encrypted file provided by passing the decrypt type provided
+    into `decrypt-tokens.sh`.
 
-    The method checks that encrypted_file exists and then passes decrypt_type to the `./scripts/decrypt-tokens`
-    script if it does. Valid values for `decrypt_type` are "discord", "calendar", and "gtoken".
+    The method checks that encrypted_file exists and then passes decrypt_type to the
+    `./scripts/decrypt-tokens` script if it does. Valid values for `decrypt_type` are "discord",
+    "calendar", and "gtoken".
 
     :param encrypted_file: the path of the file to decrypt
     :type encrypted_file: str
