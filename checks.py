@@ -2,6 +2,8 @@ from typing import List
 
 import discord
 from discord.ext.commands import check
+from typing import List
+
 
 DEVS = []
 with open("cache/devs.txt", "r") as file:
