@@ -1,5 +1,6 @@
 import discord
 import json
+import extras
 from discord.ext.commands import check
 from typing import List, Type, Callable, Union
 
@@ -19,7 +20,7 @@ def load_devs_config():
         DEVS = dev_list if dev_list is not None else []
 
 
-async def bad_permissions(ctx, permissions: List[str]) -> None:
+async def bad_permissions(ctx, permissions: List[str]):
     """
     Sends the error embed for when people try and use a command that needs permissions
     they don't have.

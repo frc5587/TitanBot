@@ -56,7 +56,7 @@ async def command_error(ctx, error_code: str, reason: str, missing_args: str = N
     :type command: str
     """
     error_codes = {
-        '404': f'The command {command} is not found, check -help if that command even exists, if it '
+        '404': f'The command `{command}` is not found, check -help if that command even exists, if it '
                f'does then please notify Johnny Wobble#1085 of this',
         '505': f'You are missing arg(s): {missing_args}, without this arg(s) the function will not work, refer to -help'
                f' if this error keeps popping up',

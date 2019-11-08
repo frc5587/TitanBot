@@ -274,13 +274,13 @@ async def on_command_error(ctx, error):
     :type error: Exception
     """
     if isinstance(error, commands.errors.CommandNotFound):
-        await extras.command_error(ctx, '404', 'command not found', command=ctx.message.content[1:])
+        await extras.command_error(ctx, '404', 'command not found', command=ctx.message.content.split()[0][1:])
 
 
 # ---------- End of commands -------------
 
 
-async def server_list() -> None:
+async def server_list():
     """
     lists all the servers the bot is on every 24 hours
     This loops for the rest of time
@@ -296,7 +296,7 @@ async def server_list() -> None:
         await asyncio.sleep(86400)
 
 
-async def game_presence() -> None:
+async def game_presence():
     """
     Every 10 seconds it randomly changes what "game" the bot is playing
     It loops forever

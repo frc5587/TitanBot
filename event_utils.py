@@ -5,7 +5,6 @@ import datetime
 import discord
 import asyncio
 from typing import List, Union
-import os
 
 import extras
 from admin import clear_and_find_channels
@@ -15,7 +14,7 @@ from classes.calendar import EventCalendar
 from classes.calendar_event import Event
 
 
-async def setup(ctx, bot) -> None:  # when this method is completed it with write the channel id to channels.txt
+async def setup(ctx, bot):  # when this method is completed it with write the channel id to channels.txt
     """
     Uses a reaction poll to determine if the person wants to subscribe or unsubscribe from the announcements
 
@@ -31,7 +30,7 @@ async def setup(ctx, bot) -> None:  # when this method is completed it with writ
     await setup_poll.sub_to_auto_announcements(bot, ctx)  # blocking
 
 
-async def alarm(time: datetime.time, content: str, ctx, pings: str) -> None:
+async def alarm(time: datetime.time, content: str, ctx, pings: str):
     """
     This method is called inside of a loop, and it will continue to loop until the destination time is reached, then it
     will send out the alarm message (embed) and stop
@@ -282,7 +281,7 @@ async def manage_events(bot, ctx=None, today: bool = False, days: int = 14, auto
         await channel.send(content=None, embed=event_embed)
 
 
-async def auto_announcements(bot) -> None:
+async def auto_announcements(bot):
     """
     Loops inside of event loop, first it checks if it is 9:00 and if it is, it checks is it is sunday, on sundays it
     sends out a message covering events for the whole week, if is is just any other day, it will send out the message
@@ -297,14 +296,17 @@ async def auto_announcements(bot) -> None:
     while not bot.is_closed():  # loops as long as the bot is connected to discord
         if WHAT_TIME_IS_IT('?'):  # True if it is 9:30
             this_day = datetime.datetime.today().weekday()
-            channels = clear_and_find_channels()  # reads channel ids
-            # if it is sunday and it hasn't already sent a message
-            if datetime.datetime.today().weekday() == 6 and this_day != last_day:
-                await manage_events(bot, today=False, channels=channels)
-                last_day = this_day
-                await asyncio.sleep(9999)
-            elif this_day != last_day:  # if it is not sunday and hasn't already sent a message
-                await manage_events(bot, days=3, channels=channels)
-                last_day = this_day
-                await asyncio.sleep(9999)
+            try:
+                channels = clear_and_find_channels()  # reads channel ids
+                # if it is sunday and it hasn't already sent a message
+                if datetime.datetime.today().weekday() == 6 and this_day != last_day:
+                    await manage_events(bot, today=False, channels=channels)
+                    last_day = this_day
+                    await asyncio.sleep(9999)
+                elif this_day != last_day:  # if it is not sunday and hasn't already sent a message
+                    await manage_events(bot, days=3, channels=channels)
+                    last_day = this_day
+                    await asyncio.sleep(9999)
+            except ValueError:
+                continue
         await asyncio.sleep(60)

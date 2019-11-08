@@ -18,7 +18,7 @@ def make_channel_cache() -> bool:
             os.mkdir('cache')
         except FileExistsError:
             pass
-        with open('cache/channels.txt', 'a') as f:
+        with open('cache/channels.txt', 'a+') as f:
             pass
         return True
     return False
@@ -28,6 +28,7 @@ def clear_and_find_channels() -> List[int]:
     """
     Clears channels.txt of any extra \n's and return a list of channel IDs
 
+    :raises ValueError: if channels.txt is empty
     :return: list of all of the channel IDs
     :rtype: List[int]
     """
@@ -40,6 +41,8 @@ def clear_and_find_channels() -> List[int]:
                 final_list.append(line)
         channels_file.seek(0)  # sets pointer to the beginning of the file
         channels_file.writelines(final_list)
+        if lines == list():
+            raise ValueError
     return [int(channel) for channel in final_list]
 
 
@@ -52,15 +55,19 @@ async def channels(bot, ctx) -> None:
     :param ctx: context for message
     :type ctx: Object
     """
-    channel_list_int = clear_and_find_channels()
-    chan_lst = []
+    try:
+        channel_list_int = clear_and_find_channels()
+        chan_lst = []
 
-    if channel_list_int == list():
-        await ctx.channel.send("No channels are subscribed to announcements")
-        return
+        if channel_list_int == list():
+            await ctx.channel.send("No channels are subscribed to announcements")
+            return
 
-    for channel_int in channel_list_int:
-        channel = bot.get_channel(channel_int)
-        chan_lst.append(f"#{str(channel)} ({channel.id})")
+        for channel_int in channel_list_int:
+            channel = bot.get_channel(channel_int)
+            chan_lst.append(f"#{str(channel)} ({channel.id})")
 
-    await ctx.channel.send('\n'.join(chan_lst))
+        await ctx.channel.send('\n'.join(chan_lst))
+
+    except ValueError:
+        await ctx.channel.send("No channels are subscribed to the announcements")
