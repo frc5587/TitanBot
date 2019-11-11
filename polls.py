@@ -39,8 +39,6 @@ class Poll(PollBaseClass):
     async def create_roles(self):
         """
         Creates all the roles needed for the poll
-
-        :return: self
         """
         for i in self.role_list:
             self.roles.append([await self.author.guild.create_role(name=i,
@@ -96,7 +94,7 @@ class Poll(PollBaseClass):
         """
         Loop, when someone reacts to the message it removes all of their other reactions and gives them the
         corresponding role, if they pick the ⛔ it removes all of their roles, and if the author picks ❌ then it will
-        close the poll with poll.end_poll()
+        close the poll with `poll.end_poll()`
 
         :param bot: client connection to discord
         :type bot: Object
@@ -203,7 +201,7 @@ async def create_poll_embed(poll: Poll) -> (discord.Embed, Poll):
     """
     Creates the embed of the poll, collects the role information from the user, runs most of the higher level Poll class
     methods to organize the poll to be sent
-
+    
     :param poll: the poll being acted on
     :type poll: Poll
     :return: the embed that will be sent and the poll with all of the data
