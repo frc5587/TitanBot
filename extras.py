@@ -111,6 +111,8 @@ async def helper(ctx, user_arg):
 
     :param ctx: context object of the message
     :type ctx: Object
+    :param user_arg: the args that the user passes through
+    :type user_arg: List[str]
     """
     if len(user_arg) > 1:
         await specific_help(ctx, user_arg[1].lower())

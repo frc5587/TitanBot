@@ -129,7 +129,6 @@ async def events(ctx, user_args: List[Union[int, float, str]]):
     :type: List[Union[int, float, str]]
     """
     await ctx.channel.trigger_typing()
-    args = ctx.message.content.split()
     try:
         if len(user_args) == 1:
             embed = await event_utils.manage_events(bot, ctx=ctx, days=user_args[0], auto=False)

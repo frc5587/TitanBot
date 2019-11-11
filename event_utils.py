@@ -30,7 +30,6 @@ async def setup(ctx, bot) -> None:  # when this method is completed it with writ
     await setup_poll.sub_to_auto_announcements(bot, ctx)  # blocking
 
 
-
 async def alarm(time: datetime.time, content: str, ctx, pings: str):
     """
     This method is called inside of a loop, and it will continue to loop until the destination time is reached, then it
