@@ -28,11 +28,13 @@ def clear_and_find_channels() -> List[int]:
     """
     Clears channels.txt of any extra \n's and return a list of channel IDs
 
+
     :raises ValueError: if channels.txt is empty
     :return: list of all of the channel IDs
     :rtype: List[int]
     """
     make_channel_cache()
+    
     with open('cache/channels.txt', 'r+') as channels_file:
         lines = channels_file.readlines()
         final_list = []
@@ -41,8 +43,10 @@ def clear_and_find_channels() -> List[int]:
                 final_list.append(line)
         channels_file.seek(0)  # sets pointer to the beginning of the file
         channels_file.writelines(final_list)
+
         if lines == list():
             raise ValueError
+      
     return [int(channel) for channel in final_list]
 
 

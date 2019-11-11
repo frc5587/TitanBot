@@ -14,7 +14,7 @@ from classes.calendar import EventCalendar
 from classes.calendar_event import Event
 
 
-async def setup(ctx, bot):  # when this method is completed it with write the channel id to channels.txt
+async def setup(ctx, bot) -> None:  # when this method is completed it with write the channel id to channels.txt
     """
     Uses a reaction poll to determine if the person wants to subscribe or unsubscribe from the announcements
 
@@ -28,6 +28,7 @@ async def setup(ctx, bot):  # when this method is completed it with write the ch
     setup_poll.message = await ctx.channel.send(embed=setup_poll.embed, content=None)
     await setup_poll.add_reactions()
     await setup_poll.sub_to_auto_announcements(bot, ctx)  # blocking
+
 
 
 async def alarm(time: datetime.time, content: str, ctx, pings: str):
@@ -161,7 +162,7 @@ async def events_by_day(ctx=None, days: int = None, events_exist: bool = False) 
     :param ctx: context object for the message
     :type ctx: Object
     :param days: days as imputed by user
-    :type days: str
+    :type days: int
     :param events_exist: whether there are events for the time specified
     :type events_exist: bool
     :return: embed for message, list of events
@@ -242,7 +243,7 @@ async def manage_events(bot, ctx=None, today: bool = False, days: int = 14, auto
         event_embed, event_list = await events_by_day(ctx=ctx, days=days, events_exist=True)
     if event_list is not None:  # if the event_list is None it will just send the embed saying that there are no events
         for num, event in enumerate(event_list):  # iteratively adds events to embed
-
+          
             # for events that are on the same day of the previous one
             if event.date == event_list[num - 1].date and len(event_list) > 1:
                 index = len(event_embed.fields) - 1

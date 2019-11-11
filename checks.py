@@ -1,3 +1,5 @@
+from typing import List
+
 import discord
 import json
 import extras

@@ -105,7 +105,7 @@ async def specific_help(ctx, help_command: str) -> None:
     await ctx.channel.send(content=None, embed=error_embed)
 
 
-async def helper(ctx, user_arg) -> None:
+async def helper(ctx, user_arg):
     """
     Sends the help embed, can also give specific help of a given command
 

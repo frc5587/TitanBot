@@ -129,6 +129,7 @@ async def events(ctx, user_args: List[Union[int, float, str]]):
     :type: List[Union[int, float, str]]
     """
     await ctx.channel.trigger_typing()
+    args = ctx.message.content.split()
     try:
         if len(user_args) == 1:
             embed = await event_utils.manage_events(bot, ctx=ctx, days=user_args[0], auto=False)
@@ -280,7 +281,7 @@ async def on_command_error(ctx, error):
 # ---------- End of commands -------------
 
 
-async def server_list():
+async def server_list() -> None:
     """
     lists all the servers the bot is on every 24 hours
     This loops for the rest of time
@@ -296,7 +297,7 @@ async def server_list():
         await asyncio.sleep(86400)
 
 
-async def game_presence():
+async def game_presence() -> None:
     """
     Every 10 seconds it randomly changes what "game" the bot is playing
     It loops forever
