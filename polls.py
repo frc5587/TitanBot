@@ -1,5 +1,6 @@
 import discord
 import asyncio
+import random
 from typing import List, Tuple
 
 from classes.PollBaseClass import PollBaseClass
@@ -184,7 +185,9 @@ async def get_roles(bot, ctx, check):
     :return: list
     """
     action_list = []
-    emoji_list = ['🍇', '🍈', '🍉', '🍊', '🍋', '🍌', '🍍', '🍎', '🍏', '🍐']  # TODO make emoji list longer
+    emoji_list = ['🍇', '🍈', '🍉', '🍊', '🍋', '🍌', '🍍', '🍎', '🍏', '🍐', '🥝', '🍒']
+    random.shuffle(emoji_list)
+    # TODO make emoji_list longer
     while True:
         msg = await bot.wait_for('message', check=check)
         if msg.content.lower() == 'done':
