@@ -10,10 +10,10 @@ This bot has a couple of integrations particularly important for our team, namel
 
 ## Getting Started
 
-
 1. Install [Python and pip](https://www.makeuseof.com/tag/install-pip-for-python/) and clone this repository
 
 2. Then, from the root of the this repository, install all of the dependencies for this project using the included `requirements.txt` file:
+
     ```bash
     pip3 install -r requirements.txt
     ```
@@ -26,9 +26,9 @@ This bot has a couple of integrations particularly important for our team, namel
     python3 bot.py
     ```
 
-One thing you are probably going to want to do is add yourself as a dev to the bot. This will allow you to use any dev-based commands like `-die`, which ends the bot. To do this, simply...
+One thing you are probably going to want to do is add yourself as a dev for the bot. This will allow you to use any dev-based commands like `-die`, which ends the bot. To do this, simply...
 
-In `config.json` replace our discord IDs with your own and anyone else's who you want to have dev permissions
+Fill the `"devs"` array in `./config.json` with the Discord IDs of the users you wish to have dev permissions.
 
 Also, at any time, you can run `-help` to see a list of commands, and `-help <specific command>` to see any details on that command
 
