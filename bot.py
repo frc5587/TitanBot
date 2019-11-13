@@ -3,6 +3,7 @@ from discord.ext import commands
 import random
 import asyncio
 import datetime
+from typing import Union, List
 
 import event_utils
 import extras
@@ -35,23 +36,42 @@ extras.Commands('SetAlarm', "Sets an alarm to happen at the time specified by '-
                             "anything specified by ‘-p’. If you want to ping multiple people use '-p' multiple times."
                             "\nPlease note that 12am, which would be 24:00, is expressed as 00:00",
                 '-setalarm -t <HH:MM> -p <@mention>', 'None')
-extras.Commands('Help', "Shows the help box. To learn more about specific commands, do '-help <command>'", '-help <O: command>',
-                'None')
+extras.Commands('Help', "Shows the help page. To learn more about specific commands, do '-help <command>'",
+                '-help <O: command>', 'None')
 
 
 # ------------- Start of commands ------------
 
 
-@checks.is_dev()
-@bot.command(name="die")
-async def die(ctx):
+@bot.command(name='test')
+@checks.get_args_in_message()
+async def test(ctx, user_args: List):
     """
-    Kills bot
+    Confirmation that the bot is up and local time
 
-    Permissions needed: Being Max
+    Permissions needed: None
 
     :param ctx: context object for the message
     :type ctx: Object
+    :param user_args: args that the user passed in
+    :type: List[Union[int, float, str]]
+    """
+    await ctx.channel.send(f"Confirmed.\nLocal time: {datetime.datetime.now().strftime('%H:%M:%S')}")
+
+
+@checks.is_dev()
+@bot.command(name="die")
+@checks.get_args_in_message()
+async def die(ctx, user_args: List):
+    """
+    Kills bot
+
+    Permissions needed: being a dev
+
+    :param ctx: context object for the message
+    :type ctx: Object
+    :param user_args: args that the user passed in
+    :type: List[Union[int, float, str]]
     """
     await ctx.channel.send('Ok, bye bye')
     raise SystemExit("Used command '-die'")
@@ -59,7 +79,8 @@ async def die(ctx):
 
 @checks.is_admin('FRC Leadership')
 @bot.command(name='makepoll')
-async def make_poll(ctx):
+@checks.get_args_in_message()
+async def make_poll(ctx, user_args: List):
     """
     Makes a poll that assigns a role for reacting and a reaction specific role, it can only be ended by the author of
     the poll
@@ -68,6 +89,8 @@ async def make_poll(ctx):
 
     :param ctx: context object for the message
     :type ctx: Object
+    :param user_args: args that the user passed in
+    :type: List[Union[int, float, str]]
     """
     try:
         await ctx.channel.send('Name your poll, then list out the options, one per message, '
@@ -92,7 +115,8 @@ async def make_poll(ctx):
 
 
 @bot.command(name='events')
-async def events(ctx):
+@checks.get_args_in_message(max_args=1, arg_types=[int])
+async def events(ctx, user_args: List[Union[int, float, str]]):
     """
     Calls the calendar api and read the calendar and gets the events happening within the amount of days specified,
     sends them within an embed
@@ -101,17 +125,15 @@ async def events(ctx):
 
     :param ctx: context object for the message
     :type ctx: Object
+    :param user_args: args that the user passed in
+    :type: List[Union[int, float, str]]
     """
     await ctx.channel.trigger_typing()
-    args = ctx.message.content.split()
     try:
-        if len(args) == 2:
-            embed = await event_utils.manage_events(bot, ctx=ctx, days=args[1], auto=False)
-        elif len(args) == 1:
+        if len(user_args) == 1:
+            embed = await event_utils.manage_events(bot, ctx=ctx, days=user_args[0], auto=False)
+        else:  # len(user_args) == 0:
             embed = await event_utils.manage_events(bot, today=True, auto=False)
-        else:
-            await extras.command_error(ctx, '707', "You have too many args", )
-            return
         await ctx.channel.send(embed=embed, content=None)
     except Exception as eee:  # This is when it sends an error-based message to it can skip back
         print(eee)
@@ -119,14 +141,17 @@ async def events(ctx):
 
 @checks.is_dev()
 @bot.command(name='channels')
-async def channel_test(ctx):
+@checks.get_args_in_message()
+async def channel_test(ctx, user_args: List):
     """
-    Debugging command, sends a message to every channel writen to channels.txt
+    Debugging command, sends a message to every channel written in channels.txt
 
     Permissions needed: being a dev
 
     :param ctx: context object for the message
     :type ctx: Object
+    :param user_args: args that the user passed in
+    :type: List[Union[int, float, str]]
     """
     try:
         await admin.channels(bot, ctx)
@@ -136,7 +161,8 @@ async def channel_test(ctx):
 
 @checks.is_admin('FRC Leadership')
 @bot.command(name='setup')
-async def setup(ctx):
+@checks.get_args_in_message()
+async def setup(ctx, user_args: List):
     """
     If the process is successful then it reads the channel id and writes it to channels.txt
 
@@ -144,6 +170,8 @@ async def setup(ctx):
 
     :param ctx: context object for the message
     :type ctx: Object
+    :param user_args: args that the user passed in
+    :type: List[Union[int, float, str]]
     """
     try:
         await event_utils.setup(ctx, bot)
@@ -152,7 +180,8 @@ async def setup(ctx):
 
 
 @bot.command(name='Math')
-async def math(ctx):
+@checks.get_args_in_message(min_args=1, max_args=9999, arg_types=str)
+async def math(ctx, user_args: List[str]):
     """
     Solves either a math equation or expression. It can hang if the expression is too complex, e.g. 5587^5587^5587
 
@@ -160,10 +189,12 @@ async def math(ctx):
 
     :param ctx: context object for the message
     :type ctx: Object
+    :param user_args: args that the user passed in
+    :type: List[Union[int, float, str]]
     """
     await ctx.channel.trigger_typing()
     try:
-        answers, equ = math_main(ctx.message.content)
+        answers, equ = math_main(user_args)
         math_embed = discord.Embed(
             title=f"`{equ}`",
             color=discord.Color.from_rgb(67, 0, 255),
@@ -174,20 +205,9 @@ async def math(ctx):
         await ctx.channel.send(f"Well, You did something wrong\n`{e}`")
 
 
-@bot.command(name='test')
-async def test(ctx):
-    """
-    Confirmation that the bot is up and local time
-
-    Permissions needed: None
-
-    :param ctx: context object for the message
-    :type ctx: Object    """
-    await ctx.channel.send(f"Confirmed.\nLocal time: {datetime.datetime.now().strftime('%H:%M:%S')}")
-
-
 @bot.command(name='setalarm')
-async def setalarm(ctx):
+@checks.get_args_in_message(min_args=4, max_args=99999, arg_types=str)
+async def setalarm(ctx, user_args: List[str]):
     """TODO make this function better
     Creates and alarm that pings people specified at the time (24hr clock) specified. Currectly only works for the
     current day (it can't do any days in advance)
@@ -196,26 +216,27 @@ async def setalarm(ctx):
 
     :param ctx: context object for the message
     :type ctx: Object
+    :param user_args: args that the user passed in
+    :type: List[Union[int, float, str]]
     """
     try:
-        message_list = ctx.message.content.split()[1:]
-        static_message_list = message_list
+        static_message_list = user_args
         pings = ""
         time = None
         for i in static_message_list:
             if i == '-t':
-                index = message_list.index(i) + 1
-                time = message_list[index]
-                message_list[index-1] = None
-                message_list[index] = None
+                index = user_args.index(i) + 1
+                time = user_args[index]
+                user_args[index - 1] = None
+                user_args[index] = None
             elif i == '-p':
-                index = message_list.index(i) + 1
-                pings += f"{message_list[index]} "
-                message_list[index - 1] = None
-                message_list[index] = None
+                index = user_args.index(i) + 1
+                pings += f"{user_args[index]} "
+                user_args[index - 1] = None
+                user_args[index] = None
         time, pings = await event_utils.check_for_errors(ctx, time, pings)
         reminder = ""
-        for i in message_list:
+        for i in user_args:
             if i is not None:
                 reminder += f"{i} "
         bot.loop.create_task(event_utils.alarm(time, reminder, ctx, pings))
@@ -224,7 +245,8 @@ async def setalarm(ctx):
 
 
 @bot.command(name='help')
-async def helper(ctx):
+@checks.get_args_in_message(max_args=1, arg_types=[str])
+async def helper(ctx, user_args: List[str]):
     """
     Sends the help embed, can also give specific help of a given command
 
@@ -232,14 +254,13 @@ async def helper(ctx):
 
     :param ctx: context object for the message
     :type ctx: Object
+    :param user_args: args that the user passed in
+    :type: List[Union[int, float, str]]
     """
     try:
-        await extras.helper(ctx)
+        await extras.helper(ctx, user_args)
     except Exception as e:
         print(e)
-
-
-# ---------- End of commands -------------
 
 
 @bot.event
@@ -253,7 +274,10 @@ async def on_command_error(ctx, error):
     :type error: Exception
     """
     if isinstance(error, commands.errors.CommandNotFound):
-        await extras.command_error(ctx, '404', 'command not found', command=ctx.message.content[1:])
+        await extras.command_error(ctx, '404', 'command not found', command=ctx.message.content.split()[0][1:])
+
+
+# ---------- End of commands -------------
 
 
 async def server_list() -> None:
@@ -288,7 +312,13 @@ async def game_presence() -> None:
             print(exc)
             continue
 
+
+admin.make_channel_cache()
+checks.load_devs_config()
+
 bot.loop.create_task(event_utils.auto_announcements(bot))
 bot.loop.create_task(game_presence())
 bot.loop.create_task(server_list())
+
+
 bot.run(token)

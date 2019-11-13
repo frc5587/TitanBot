@@ -3,14 +3,12 @@ import pickle
 import subprocess
 import sys
 from typing import List
-
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 
 def read_discord_token() -> str:
     """
     Fetches the client secret for the Discord bot.
-
     If the decrypted text file containing the token cannot be found and the user
     is on a POSIX system, an attempt is made to decrypt the encrypted copy of the
     token included in this repository using gpg (see README for details).
@@ -41,13 +39,12 @@ def read_discord_token() -> str:
 def read_calendar_credentials(scopes: List[str]) -> InstalledAppFlow:
     """
     Fetches the InstalledAppFlow for the Google Calendar credentials.
-
     If the decrypted JSON file containing the credentials cannot be found and the user
     is on a POSIX system, an attempt is made to decrypt the encrypted copy of the JSON
     credentials included in this repository using gpg (see README for details).
 
-    :param SCOPES: Scopes of the Google Calendar credentials for creating the Flow
-    :type SCOPES: List[str]
+    :param scopes: Scopes of the Google Calendar credentials for creating the Flow
+    :type scopes: List[str]
     :raises RuntimeError: Raised when reading the credentials was unsuccessful
     :return: Object to get Google data
     :rtype: InstalledAppFlow
@@ -73,12 +70,11 @@ def read_calendar_credentials(scopes: List[str]) -> InstalledAppFlow:
 
 
 def read_google_token() -> pickle:
-    """Fetches the Google token from a previously generated pickle.
-
+    """
+    Fetches the Google token from a previously generated pickle.
     This token is created and stored to prevent the bot from having to go through
     the full authorisation process for Google Calendar each time it is run, as the
     process cannot be completed on services such as Heroku.
-
     If the decrypted pickle containing the token cannot be found and the user
     is on a POSIX system, an attempt is made to decrypt the encrypted copy of the
     token included in this repository using gpg (see README for details).
@@ -105,7 +101,8 @@ def read_google_token() -> pickle:
 
 
 def should_attempt_decrypt(unencrypted_file: str) -> bool:
-    """Determine whether an attempt to decrypt a token should be
+    """
+    Determine whether an attempt to decrypt a token should be
     made, or if the token can be read now.
 
     :param unencrypted_file: the path that should lead to the unencrypted file
@@ -119,10 +116,9 @@ def should_attempt_decrypt(unencrypted_file: str) -> bool:
 
 
 def attempt_decrypt(encrypted_file: str, decrypt_type: str) -> None:
-    """Attempts to decrypt the encrypted file provided by passing the decrypt type provided
-    into `decrypt-tokens.sh`.
-
-    The method checks that encrypted_file exists and then passes decrypt_type to the
+    """
+    Attempts to decrypt the encrypted file provided by passing the decrypt type provided
+    into `decrypt-tokens.sh`. The method checks that encrypted_file exists and then passes decrypt_type to the
     `./scripts/decrypt-tokens` script if it does. Valid values for `decrypt_type` are "discord",
     "calendar", and "gtoken".
 

@@ -7,14 +7,12 @@ from admin import clear_and_find_channels
 class SetupPoll(PollBaseClass):
 
     @staticmethod
-    async def unsubscribe(ctx) -> None:
+    async def unsubscribe(ctx):
         """
         It removes the channel from channels.txt, if it hasn't been already
 
         :param ctx: context for the message
         :type ctx: Object
-        :return: None
-        :rtype: None
         """
         with open('cache/channels.txt', 'r') as f:  # reads all current ids on the text file (list)
             channel_id_list = f.readlines()
@@ -35,27 +33,27 @@ class SetupPoll(PollBaseClass):
                     await ctx.channel.send("This channel has now been unsubscribed from the announcements")
 
     @staticmethod
-    async def subscribe(ctx) -> None:
+    async def subscribe(ctx):
         """
         This adds the channel to channels.txt if it isn't on already
 
         :param ctx: context for the message
         :type ctx: Object
-        :return: None
-        :rtype: None
         """
-        channel_id_list = clear_and_find_channels()
+        try:
+            channel_id_list = clear_and_find_channels()
 
-        if ctx.channel.id in channel_id_list:  # checks if channels is already in the list
-            await ctx.channel.send("This channel is already subscribed to the announcements")
-            return
-
-        else:
+            if ctx.channel.id in channel_id_list:  # checks if channels is already in the list
+                await ctx.channel.send("This channel is already subscribed to the announcements")
+                return
+            else:
+                raise ValueError
+        except ValueError:
             with open('cache/channels.txt', 'a') as f:  # writes the channels id to text file
                 f.write("\n" + str(ctx.channel.id))
             await ctx.channel.send("This channel is now subscribed to the announcements")
 
-    async def sub_to_auto_announcements(self, bot, ctx) -> None:
+    async def sub_to_auto_announcements(self, bot, ctx):
         """
         Waits for a reaction (either ✅ or ❌) then it acts accordingly, if it is a check it adds it to channels.txt if
         it isn't on already, if it is the X then it removes it from channels.txt, if it hasn't been already
@@ -63,8 +61,6 @@ class SetupPoll(PollBaseClass):
         :param bot: connection
         :param ctx: context for the message
         :type ctx: Object
-        :return: None
-        :rtype: None
         """
         emoji, member = await self.reaction_watch_loop(bot)
         while member != self.author:

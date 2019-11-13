@@ -30,7 +30,7 @@ async def setup(ctx, bot) -> None:  # when this method is completed it with writ
     await setup_poll.sub_to_auto_announcements(bot, ctx)  # blocking
 
 
-async def alarm(time: datetime.time, content: str, ctx, pings: str) -> None:
+async def alarm(time: datetime.time, content: str, ctx, pings: str):
     """
     This method is called inside of a loop, and it will continue to loop until the destination time is reached, then it
     will send out the alarm message (embed) and stop
@@ -152,7 +152,7 @@ def get_events(days: int = None) -> List[Event]:
     return sliced_calendar
 
 
-async def events_by_day(ctx=None, days: str = None, events_exist: bool = False) -> (discord.Embed, Union[List, None]):
+async def events_by_day(ctx=None, days: int = None, events_exist: bool = False) -> (discord.Embed, Union[List, None]):
     """
     This creates an embed for any amount of days, and then returns it to the parent method to have the actual events
     added in, it raises a ValueError as a shortcut back, it also generates the list of events that the parent method
@@ -161,24 +161,21 @@ async def events_by_day(ctx=None, days: str = None, events_exist: bool = False) 
     :param ctx: context object for the message
     :type ctx: Object
     :param days: days as imputed by user
-    :type days: str
+    :type days: int
     :param events_exist: whether there are events for the time specified
     :type events_exist: bool
     :return: embed for message, list of events
     :rtype: discord.Embed, List[Event]
     """
-    if days.isdigit():
-        event_list = get_events(int(days))
-        if event_list == list():
-            no_events = create_event_embed(False, False, num_days=days)
-            if events_exist:
-                return no_events, None
-            await ctx.channel.send(content=None, embed=no_events)
-            raise ValueError
-        event_embed = create_event_embed(False, True, num_days=days)
-        return event_embed, event_list
-    await extras.command_error(ctx, '707', 'Days specified is not a number')
-    raise ValueError
+    event_list = get_events(days)
+    if event_list == list():
+        no_events = create_event_embed(False, False, num_days=days)
+        if events_exist:
+            return no_events, None
+        await ctx.channel.send(content=None, embed=no_events)
+        raise ValueError
+    event_embed = create_event_embed(False, True, num_days=days)
+    return event_embed, event_list
 
 
 async def events_today(ctx=None, events_exist: bool = False) -> (discord.Embed, Union[List, None]):
@@ -219,7 +216,7 @@ def WHAT_TIME_IS_IT(question_mark: str) -> bool:
         datetime.datetime.strptime('13:36', '%H:%M').time()
 
 
-async def manage_events(bot, ctx=None, today: bool = False, days: str = '14', auto: bool = True,
+async def manage_events(bot, ctx=None, today: bool = False, days: int = 14, auto: bool = True,
                         channels: List[int] = None) -> Union[discord.Embed, None]:
     """
     Gets basic embed then either appends the events to it and sends it or sends an empty one saying that there are no
@@ -246,7 +243,8 @@ async def manage_events(bot, ctx=None, today: bool = False, days: str = '14', au
     if event_list is not None:  # if the event_list is None it will just send the embed saying that there are no events
         for num, event in enumerate(event_list):  # iteratively adds events to embed
 
-            if event.date == event_list[num - 1].date:  # for events that are on the same day of the previous one
+            # for events that are on the same day of the previous one
+            if event.date == event_list[num - 1].date and len(event_list) > 1:
                 index = len(event_embed.fields) - 1
                 value = event_embed.fields[index].value
 
@@ -283,11 +281,11 @@ async def manage_events(bot, ctx=None, today: bool = False, days: str = '14', au
         await channel.send(content=None, embed=event_embed)
 
 
-async def auto_announcements(bot) -> None:
+async def auto_announcements(bot):
     """
     Loops inside of event loop, first it checks if it is 9:00 and if it is, it checks is it is sunday, on sundays it
     sends out a message covering events for the whole week, if is is just any other day, it will send out the message
-    only covering that day
+    only covering that day. It will also create the channel cache if it does not already exist.
 
     :param bot: client connection to discord
     :type bot: Object
@@ -298,14 +296,17 @@ async def auto_announcements(bot) -> None:
     while not bot.is_closed():  # loops as long as the bot is connected to discord
         if WHAT_TIME_IS_IT('?'):  # True if it is 9:30
             this_day = datetime.datetime.today().weekday()
-            channels = clear_and_find_channels()  # reads channel ids
-            # if it is sunday and it hasn't already sent a message
-            if datetime.datetime.today().weekday() == 6 and this_day != last_day:
-                await manage_events(bot, today=False, channels=channels)
-                last_day = this_day
-                await asyncio.sleep(9999)
-            elif this_day != last_day:  # if it is not sunday and hasn't already sent a message
-                await manage_events(bot, days='3', channels=channels)
-                last_day = this_day
-                await asyncio.sleep(9999)
+            try:
+                channels = clear_and_find_channels()  # reads channel ids
+                # if it is sunday and it hasn't already sent a message
+                if datetime.datetime.today().weekday() == 6 and this_day != last_day:
+                    await manage_events(bot, today=False, channels=channels)
+                    last_day = this_day
+                    await asyncio.sleep(9999)
+                elif this_day != last_day:  # if it is not sunday and hasn't already sent a message
+                    await manage_events(bot, days=3, channels=channels)
+                    last_day = this_day
+                    await asyncio.sleep(9999)
+            except ValueError:
+                continue
         await asyncio.sleep(60)

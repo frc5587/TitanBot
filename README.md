@@ -6,7 +6,7 @@ This bot has a couple of integrations particularly important for our team, namel
 
 1. Auto-announcements from Google Calendar
 2. Polls taken through reactions
-3. A simple equation solver
+3. A powerful equation solver
 
 ## Getting Started
 
@@ -26,11 +26,9 @@ This bot has a couple of integrations particularly important for our team, namel
     python3 bot.py
     ```
 
-One thing you are probably going to want to do is add yourself as a dev to the bot. This will allow you to use any dev-based commands like `-die`, which ends the bot. To do this, simply...
+One thing you are probably going to want to do is add yourself as a dev for the bot. This will allow you to use any dev-based commands like `-die`, which ends the bot. To do this, simply...
 
-1. Create a folder called `cache` in the root of the project
-2. Make a file called `devs.txt`
-3. Copy your discord user ID into the file. If you want to add anyone else, just add their IDs as well, with each one on a separate line
+Fill the `"devs"` array in `./config.json` with the Discord IDs of the users you wish to have dev permissions.
 
 Also, at any time, you can run `-help` to see a list of commands, and `-help <specific command>` to see any details on that command
 
@@ -112,4 +110,4 @@ If you didn't store this bot in a public repository, then you are done (yay!). H
     3. In the `VALUE` parameter put the exact same password you used to encrypt the tokens and credentials
 6. Set your bot to run and bathe in its majestic glory!
 
-> If you have any problems with any of these steps you can make an issue on the TitanBot repository or DM Johnny Wobble#1085
+> If you have any problems with any of these steps you can make an issue on the TitanBot repository or DM `Johnny Wobble#1085`
