@@ -144,7 +144,7 @@ async def events(ctx, user_args: List[Union[int, float, str]]):
 @checks.get_args_in_message()
 async def channel_test(ctx, user_args: List):
     """
-    Debugging command, sends a message to every channel writen to channels.txt
+    Debugging command, sends a message to every channel written in channels.txt
 
     Permissions needed: being a dev
 
