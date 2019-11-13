@@ -114,8 +114,8 @@ async def helper(ctx, user_arg):
     :param user_arg: the args that the user passes through
     :type user_arg: List[str]
     """
-    if len(user_arg) > 1:
-        await specific_help(ctx, user_arg[1].lower())
+    if len(user_arg) > 0:
+        await specific_help(ctx, user_arg[0].lower())
     else:
         embed = discord.Embed(
             title='Help',
