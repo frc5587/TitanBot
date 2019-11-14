@@ -1,10 +1,12 @@
-import discord
 from typing import List
+
+import discord
 
 
 class Commands:
     """
-    This is just an easy way to keep track of commands and it generates the string used in the help function
+    This is just an easy way to keep track of commands and it generates the string used in the help
+    function
     """
     command_list = []
     command_count = 0
@@ -13,8 +15,8 @@ class Commands:
 
     def __init__(self, name: str, description: str, syntax: str, permissions: str):
         """
-        Creates the command object (duh) and generates the comma separated string of commands used by the help function
-        to list commands
+        Creates the command object (duh) and generates the comma separated string of commands used
+        by the help function to list commands
 
         :param name: name of command
         :type name: str
@@ -35,7 +37,11 @@ class Commands:
         Commands.command_str = ", ".join(Commands.command_list_name)
 
 
-async def command_error(ctx, error_code: str, reason: str, missing_args: str = None, command: str = None) -> None:
+async def command_error(ctx,
+                        error_code: str,
+                        reason: str,
+                        missing_args: str = None,
+                        command: str = None) -> None:
     """
     This send out an error message (embed) according to the error codes below
 
@@ -56,11 +62,12 @@ async def command_error(ctx, error_code: str, reason: str, missing_args: str = N
     :type command: str
     """
     error_codes = {
-        '404': f'The command `{command}` is not found, check -help if that command even exists, if it '
-               f'does then please notify Johnny Wobble#1085 of this',
-        '505': f'You are missing arg(s): {missing_args}, without this arg(s) the function will not work, refer to -help'
-               f' if this error keeps popping up',
-        '606': 'The expression/equation that you imputed could not be solved due to a complexity error',
+        '404': f'The command `{command}` is not found, check -help if that command even exists, if '
+               f'it does then please notify Johnny Wobble#1085 or Brendan Doney#2365 of this',
+        '505': f'You are missing arg(s): {missing_args}, without this arg(s) the function will not '
+               f'work, refer to -help if this error keeps popping up',
+        '606': 'The expression/equation that you imputed could not be solved due to a complexity '
+               'error',
         '707': 'Check your args, one or more may not be correct',
         '808': 'Incorrect number of args'}
     error_embed = discord.Embed(
@@ -73,8 +80,9 @@ async def command_error(ctx, error_code: str, reason: str, missing_args: str = N
 
 async def specific_help(ctx, help_command: str) -> None:
     """
-    This will retrieve and send data about a specific command when it is askes, e.g. `-help math`, then it will give all
-    of the helpful things about the math function: syntax, permissions needed, name
+    This will retrieve and send data about a specific command when it is askes, e.g. `-help math`,
+    then it will give all of the helpful things about the math function: syntax, permissions needed,
+    name
 
     :param ctx: context object for the message
     :type ctx: Object
@@ -95,14 +103,7 @@ async def specific_help(ctx, help_command: str) -> None:
             await ctx.channel.send(content=None, embed=help_command_embed)
             return
 
-    error_embed = discord.Embed(  # tells user that the command doesn't exist
-        title='Error 404: command not found',
-        description=f'The command {ctx.message.content.split()[1]} is not found, '
-                    f'check -help to see if that command exists; '
-                    f'if it does then please notify Johnny Wobble#1085 or Brendan Doney#2365 of this',
-        color=discord.Color.from_rgb(255, 0, 0))
-
-    await ctx.channel.send(content=None, embed=error_embed)
+    await command_error(ctx, '404', 'Command not found', command=help_command)
 
 
 async def helper(ctx, user_arg):

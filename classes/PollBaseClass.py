@@ -1,14 +1,16 @@
 import asyncio
-import discord
 from typing import List
+
+import discord
 
 
 class PollBaseClass:
     def __init__(self, emoji_list: List[str], author: discord.Member, title: str):
         """
-        This gets inherited into any poll-based class whether or not all of the methods get overridden. This contains
-        all the functionality to run a reaction poll, albeit a basic one, it doesn't do anything if there is a reaction,
-        but that can be overridden when necessary, just copy and paste the code and edit to your heart's content
+        This gets inherited into any poll-based class whether or not all of the methods get
+        overridden. This contains all the functionality to run a reaction poll, albeit a basic one,
+        it doesn't do anything if there is a reaction,but that can be overridden when necessary,
+        just copy and paste the code and edit to your heart's content
 
         :param emoji_list: The list of emojis used in the poll
         :type emoji_list: List[str]
@@ -26,7 +28,8 @@ class PollBaseClass:
 
     async def end_poll(self):
         """
-        Ends the poll by deleting all of the the roles, then edits the poll message to say poll has ended
+        Ends the poll by deleting all of the the roles, then edits the poll message to say poll has
+        ended
         """
         embed_edit = self.embed.set_footer(text="Poll has ended")
         await self.message.edit(embed=embed_edit)
@@ -34,8 +37,8 @@ class PollBaseClass:
 
     async def reaction_watch_loop(self, bot):
         """
-        Loop, when someone reacts to the message it removes all of their other reactions and gives them the
-        corresponding role
+        Loop, when someone reacts to the message it removes all of their other reactions and gives
+        them the corresponding role
 
         :param bot: client connection to discord
         :type bot: Object
@@ -43,8 +46,8 @@ class PollBaseClass:
 
         def reaction_check(reaction_, user) -> bool:
             """
-            Is a check method so that bot.wait_for() only returns valid reactions, it deletes incorrect reactions and
-            ignores ones from the wrong message
+            Is a check method so that bot.wait_for() only returns valid reactions, it deletes
+            incorrect reactions and ignores ones from the wrong message
 
             :param reaction_: the reaction that the user reacted with
             :type reaction_: discord.Reaction
@@ -68,7 +71,8 @@ class PollBaseClass:
 
         while True:
             try:
-                reaction, member = await bot.wait_for('reaction_add', check=reaction_check)  # blocking
+                # blocking
+                reaction, member = await bot.wait_for('reaction_add', check=reaction_check)
                 return str(reaction.emoji), member
 
             except Exception as e:
@@ -76,8 +80,8 @@ class PollBaseClass:
 
     async def add_reactions(self):
         """
-        Adds the appropriate reactions to the poll message, and the cancel emoji to the emoji list, also names the
-        general reaction role (role you get from reacting to anything after the title
+        Adds the appropriate reactions to the poll message, and the cancel emoji to the emoji list,
+        also names the general reaction role (role you get from reacting to anything after the title
         """
         for emoji in self.emoji_list:
             await self.message.add_reaction(emoji)

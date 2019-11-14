@@ -7,8 +7,8 @@ import os
 
 def make_channel_cache() -> bool:
     """
-    Creates the file and folder for caching the channels used in the auto announcement system. Returns `True` if it
-    created the file, and `False` if it didn't
+    Creates the file and folder for caching the channels used in the auto announcement system.
+    Returns `True` if it created the file, and `False` if it didn't
 
     :return: whether it created the file
     :rtype: bool

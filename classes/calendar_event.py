@@ -45,7 +45,8 @@ class Event:
         if self.date is not None:
 
             self.title = self.event_dict.get("summary")  # title of event
-            self.date_time = datetime.datetime.strptime(self.event_dict.get('start').get('date'), '%Y-%m-%d')
+            self.date_time = datetime.datetime.strptime(self.event_dict.get('start').get('date'),
+                                                        '%Y-%m-%d')
             self.date = self.date_time.date()
             self.day = self.date.strftime("%A")
             self.description = self.event_dict.get("description")

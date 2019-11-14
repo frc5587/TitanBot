@@ -2,9 +2,10 @@
 this file contains any bot command or method that controls the auto-announcements and the alarm logic
 """
 import datetime
-import discord
 import asyncio
 from typing import List, Union
+
+import discord
 
 import extras
 from admin import clear_and_find_channels
@@ -14,9 +15,11 @@ from classes.calendar import EventCalendar
 from classes.calendar_event import Event
 
 
-async def setup(ctx, bot) -> None:  # when this method is completed it with write the channel id to channels.txt
+# when this method is completed it with write the channel id to channels.txt
+async def setup(ctx, bot) -> None:
     """
-    Uses a reaction poll to determine if the person wants to subscribe or unsubscribe from the announcements
+    Uses a reaction poll to determine if the person wants to subscribe or unsubscribe from the
+    announcements
 
     :param ctx: context object for the message
     :type ctx: Object
@@ -32,7 +35,8 @@ async def setup(ctx, bot) -> None:  # when this method is completed it with writ
 
 async def alarm(time: datetime.time, content: str, ctx, pings: str):
     """
-    This method is called inside of a loop, and it will continue to loop until the destination time is reached, then it
+    This method is called inside of a loop, and it will continue to loop until the destination time
+    is reached, then it
     will send out the alarm message (embed) and stop
 
     this gets looped to inside of an event loop
@@ -49,7 +53,8 @@ async def alarm(time: datetime.time, content: str, ctx, pings: str):
     await ctx.channel.send("Alarm set!")
     while True:
         # checks if time is within 5 secs of scheduled time
-        if time <= datetime.datetime.now().time() <= datetime.time(time.hour, time.minute+5, time.second):
+        if time <= datetime.datetime.now().time() <= \
+                datetime.time(time.hour, time.minute+5, time.second):
             break
         else:
             await asyncio.sleep(30)
@@ -64,9 +69,10 @@ async def alarm(time: datetime.time, content: str, ctx, pings: str):
 
 async def check_for_errors(ctx, time: str, pings: str) -> (datetime.time, str):
     """
-    This take all of the args given by the human on discord and checks them for errors, if there is and error it calls
-    the command_error method to notify the human what they have messed up, if it succeeds then this wil take the time
-    str and convert it to a datetime.time object the parent method continues on normally
+    This take all of the args given by the human on discord and checks them for errors, if there is
+    and error it calls the command_error method to notify the human what they have messed up, if it
+    succeeds then this wil take the time str and convert it to a datetime.time object the parent
+    method continues on normally
 
     :param ctx: context object for the message
     :type ctx: Object
@@ -119,7 +125,8 @@ def create_event_embed(is_today: bool, events_exist: bool, num_days: int = None)
             color=discord.Color.from_rgb(67, 0, 255))
     elif not is_today and events_exist:
         embed = discord.Embed(
-            title=f"**Events happening through {f'the next {num_days} days' if num_days != 1 else 'tomorrow'}**",
+            title=f"**Events happening through "
+                  f"{f'the next {num_days} days' if num_days != 1 else 'tomorrow'}**",
             color=discord.Color.from_rgb(67, 0, 255))
     else:
         embed = discord.Embed(
@@ -131,9 +138,9 @@ def create_event_embed(is_today: bool, events_exist: bool, num_days: int = None)
 
 def get_events(days: int = None) -> List[Event]:
     """
-    First it sets up the api, then it gets the events from it, organizes the events by date, indexes the calendar by
-    date, returns the events that are happening in the next `days` days, if you want events for today `days` should
-    equal 0
+    First it sets up the api, then it gets the events from it, organizes the events by date, indexes
+    the calendar by date, returns the events that are happening in the next `days` days, if you want
+    events for today `days` should equal 0
 
     :param days: number of days the events cover
     :type days: int
@@ -148,15 +155,18 @@ def get_events(days: int = None) -> List[Event]:
     big_calendar.sort(key=lambda x: x.date_time)
     massive_calendar = EventCalendar(list_of_events=big_calendar)
     massive_calendar.find_empty_days()
-    sliced_calendar = massive_calendar[datetime.datetime.today().date() + datetime.timedelta(days=days)]
+    sliced_calendar = massive_calendar[datetime.datetime.today().date() +
+                                       datetime.timedelta(days=days)]
     return sliced_calendar
 
 
-async def events_by_day(ctx=None, days: int = None, events_exist: bool = False) -> (discord.Embed, Union[List, None]):
+async def events_by_day(ctx=None,
+                        days: int = None,
+                        events_exist: bool = False) -> (discord.Embed, Union[List, None]):
     """
-    This creates an embed for any amount of days, and then returns it to the parent method to have the actual events
-    added in, it raises a ValueError as a shortcut back, it also generates the list of events that the parent method
-    will add to the embed
+    This creates an embed for any amount of days, and then returns it to the parent method to have
+    the actual events added in, it raises a ValueError as a shortcut back, it also generates the
+    list of events that the parent method will add to the embed
 
     :param ctx: context object for the message
     :type ctx: Object
@@ -180,9 +190,9 @@ async def events_by_day(ctx=None, days: int = None, events_exist: bool = False) 
 
 async def events_today(ctx=None, events_exist: bool = False) -> (discord.Embed, Union[List, None]):
     """
-    This creates an embed for only events happening today, and then returns it to the parent method to have the actual
-    events added in, it raises a ValueError as a shortcut back, it also generates the list of events that the parent
-    method will add to the embed
+    This creates an embed for only events happening today, and then returns it to the parent method
+    to have the actual events added in, it raises a ValueError as a shortcut back, it also generates
+    the list of events that the parent method will add to the embed
 
     :param events_exist: whether there are events
     :type events_exist: bool
@@ -204,28 +214,28 @@ async def events_today(ctx=None, events_exist: bool = False) -> (discord.Embed, 
 
 def WHAT_TIME_IS_IT(question_mark: str) -> bool:
     """
-    Checks if it is 9:30, returns True if it is, it is at 13:30 because it runs on a Heroku server that is in a timezone
-    4 hours behind EST
+    Checks if it is 9:30, returns True if it is, it is at 13:30 because it runs on a Heroku server
+    that is in a timezone 4 hours behind EST
 
     :param question_mark: literally just exists so when its called there is a question mark
     :type question_mark: str (useless)
     :return: whether its 9:30
     :rtype: bool
     """
-    return datetime.datetime.strptime('13:30', '%H:%M').time() <= datetime.datetime.now().time() <= \
-        datetime.datetime.strptime('13:36', '%H:%M').time()
+    return datetime.datetime.strptime('13:30', '%H:%M').time() <= datetime.datetime.now().time() \
+        <= datetime.datetime.strptime('13:36', '%H:%M').time()
 
 
 async def manage_events(bot, ctx=None, today: bool = False, days: int = 14, auto: bool = True,
                         channels: List[int] = None) -> Union[discord.Embed, None]:
     """
-    Gets basic embed then either appends the events to it and sends it or sends an empty one saying that there are no
-    events happening, it then iterates through all of the channels, creating the channel object from the channel ids and
-    sends them to all of the channels saved in channels.txt
+    Gets basic embed then either appends the events to it and sends it or sends an empty one saying
+    that there are no events happening, it then iterates through all of the channels, creating the
+    channel object from the channel ids and sends them to all of the channels saved in channels.txt
 
     :param today: if True then it send an embed that only contains today's events
     :type today: bool
-    :param channels: list of strings representing all of the channels that the announcement must be sent to
+    :param channels: list of strings of the channels that the announcement must be sent to
     :type channels: list[int]
     :param bot: client connection to discord
     :type bot: Object
@@ -240,7 +250,9 @@ async def manage_events(bot, ctx=None, today: bool = False, days: int = 14, auto
         event_embed, event_list = await events_today(events_exist=True)
     else:  # gets events for the next week
         event_embed, event_list = await events_by_day(ctx=ctx, days=days, events_exist=True)
-    if event_list is not None:  # if the event_list is None it will just send the embed saying that there are no events
+
+    # if the event_list is None it will just send the embed saying that there are no events
+    if event_list is not None:
         for num, event in enumerate(event_list):  # iteratively adds events to embed
 
             # for events that are on the same day of the previous one
@@ -258,7 +270,9 @@ async def manage_events(bot, ctx=None, today: bool = False, days: int = 14, auto
                           f"━➤ *{event.start_time.strftime('%I:%M %p')} to "\
                           f"{event.end_time.strftime('%I:%M %p')}*"
 
-                event_embed.set_field_at(index, name=event.date.strftime("%A (%m/%d/%y)"), value=f"{value}\n{add}")
+                event_embed.set_field_at(index,
+                                         name=event.date.strftime("%A (%m/%d/%y)"),
+                                         value=f"{value}\n{add}", inline=False)
                 continue
 
             elif event.start_time is None:  # for events without a time
@@ -283,14 +297,16 @@ async def manage_events(bot, ctx=None, today: bool = False, days: int = 14, auto
 
 async def auto_announcements(bot):
     """
-    Loops inside of event loop, first it checks if it is 9:00 and if it is, it checks is it is sunday, on sundays it
-    sends out a message covering events for the whole week, if is is just any other day, it will send out the message
-    only covering that day. It will also create the channel cache if it does not already exist.
+    Loops inside of event loop, first it checks if it is 9:00 and if it is, it checks is it is
+    sunday, on sundays it sends out a message covering events for the whole week, if is is just any
+    other day, it will send out the message only covering that day. It will also create the channel
+    cache if it does not already exist.
 
     :param bot: client connection to discord
     :type bot: Object
     """
-    last_day = datetime.datetime.today() + datetime.timedelta(days=-1)  # creates a variable representing yesterday
+    last_day = datetime.datetime.today() + datetime.timedelta(days=-1)
+    # creates a variable representing yesterday
     last_day = last_day.weekday()
     await bot.wait_until_ready()
     while not bot.is_closed():  # loops as long as the bot is connected to discord

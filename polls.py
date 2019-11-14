@@ -1,19 +1,24 @@
-import discord
 import asyncio
 import random
 from typing import List, Tuple
+
+import discord
 
 from classes.PollBaseClass import PollBaseClass
 
 
 class Poll(PollBaseClass):
     """
-    This cass has all the methods needed to run a discord reaction based poll, except for the data collection, given
-    the proper loops on the calls
+    This cass has all the methods needed to run a discord reaction based poll, except for the data
+    collection, given the proper loops on the calls
     """
     model_perms = discord.Permissions(0)
 
-    def __init__(self, emoji_list: List[str], role_list: List[str], author: discord.Member, title: str):
+    def __init__(self,
+                 emoji_list: List[str],
+                 role_list: List[str],
+                 author: discord.Member,
+                 title: str):
         """
         This should be called once the data is obtained
 
@@ -52,16 +57,17 @@ class Poll(PollBaseClass):
 
     def make_body_text(self):
         """
-        Formats all of the roles and emojis so they can look nice and orderly on the embed, basically makes them all one
-        big str
+        Formats all of the roles and emojis so they can look nice and orderly on the embed,
+        basically makes them all one big str
         """
-        self.text += '\n'.join((f"{emoji} - {role.mention}" for emoji, role in self.emoji_role_paired_list))
+        self.text += '\n'.join((f"{emoji} - "
+                                f"{role.mention}" for emoji, role in self.emoji_role_paired_list))
         return self
 
     def get_role(self, emoji_unicode: str) -> (discord.Role, List[Tuple[str, discord.Role]]):
         """
-        Gets the role associated with the unicode of an emoji, and returns a list of the rest of the emoji role pair
-        without the emoji role pair that was asked for
+        Gets the role associated with the unicode of an emoji, and returns a list of the rest of the
+        emoji role pair without the emoji role pair that was asked for
 
         :param emoji_unicode: the string literal of the emoji
         :type emoji_unicode: str
@@ -81,8 +87,9 @@ class Poll(PollBaseClass):
 
     async def end_poll(self):
         """
-        Ends the poll by deleting all of the the roles, then edits the poll message to say poll has ended
-        TODO replace the roles on the message with their string literal so it doesn't say '@role-deleted'
+        Ends the poll by deleting all of the the roles, then edits the poll message to say poll has
+        ended
+        TODO replace the roles on the message so it doesn't say '@role-deleted'
         """
         for role in self.roles:
             await role[0].delete()
@@ -93,9 +100,9 @@ class Poll(PollBaseClass):
 
     async def reaction_watch_loop(self, bot) -> None:
         """
-        Loop, when someone reacts to the message it removes all of their other reactions and gives them the
-        corresponding role, if they pick the ⛔ it removes all of their roles, and if the author picks ❌ then it will
-        close the poll with `poll.end_poll()`
+        Loop, when someone reacts to the message it removes all of their other reactions and gives
+        them the corresponding role, if they pick the ⛔ it removes all of their roles, and if the
+        author picks ❌ then it will close the poll with `poll.end_poll()`
 
         :param bot: client connection to discord
         :type bot: Object
@@ -103,14 +110,14 @@ class Poll(PollBaseClass):
 
         def reaction_check(reaction_, user):
             """
-            Is a check method so that bot.wait_for() only returns valid reactions, it deletes incorrect reations and
-            ignores ones from the wrong message
+            Is a check method so that bot.wait_for() only returns valid reactions, it deletes
+            incorrect reactions and ignores ones from the wrong message
 
             :param reaction_: Reaction that this is called for
             :type reaction_: discord.Reaction
             :param user: The user that reacts with reaction_
             :type user: discord.User
-            :return: Whether if is a valid reaction for the poll, if False it just ignore its (and remove it)
+            :return: Whether if is a valid reaction for the poll
             :rtype: bool
             """
             # if valid message and real user
@@ -124,7 +131,8 @@ class Poll(PollBaseClass):
                 elif str(reaction_.emoji) == '❌':
                     return True
 
-                elif str(reaction_.emoji) in self.emoji_list:  # if the reaction is one of the choices for the poll
+                # if the reaction is one of the choices for the poll
+                elif str(reaction_.emoji) in self.emoji_list:
                     return True
 
                 loop.run_until_complete(self.message.remove_reaction(reaction_, user))
@@ -133,7 +141,8 @@ class Poll(PollBaseClass):
 
         while True:
             try:
-                reaction, member = await bot.wait_for('reaction_add', check=reaction_check)  # blocking
+                # blocking
+                reaction, member = await bot.wait_for('reaction_add', check=reaction_check)
 
                 if str(reaction.emoji) == '⛔':  # ends poll
                     await self.end_poll()
@@ -156,8 +165,9 @@ class Poll(PollBaseClass):
 
     async def add_reactions(self):
         """
-        Adds the appropriate reactions to the poll message, and the cancel emoji to the emoji list, also names the
-        general reaction role (role you get from reacting to anything) after the title
+        Adds the appropriate reactions to the poll message, and the cancel emoji to the emoji list,
+        also names the general reaction role (role you get from reacting to anything) after the
+        title
         """
         for emoji in self.emoji_list:
             await self.message.add_reaction(emoji)
@@ -174,7 +184,8 @@ class Poll(PollBaseClass):
 
 async def get_roles(bot, ctx, check):
     """
-    Interacts with the user to get the options for the poll and return the appropriate emojis as well
+    Interacts with the user to get the options for the poll and return the appropriate emojis as
+    well
 
     :param bot: client connection to discord
     :type bot: Object
@@ -202,8 +213,8 @@ async def get_roles(bot, ctx, check):
 
 async def create_poll_embed(poll: Poll) -> (discord.Embed, Poll):
     """
-    Creates the embed of the poll, collects the role information from the user, runs most of the higher level Poll class
-    methods to organize the poll to be sent
+    Creates the embed of the poll, collects the role information from the user, runs most of the
+    higher level Poll class methods to organize the poll to be sent
     
     :param poll: the poll being acted on
     :type poll: Poll
@@ -214,7 +225,8 @@ async def create_poll_embed(poll: Poll) -> (discord.Embed, Poll):
     poll.make_body_text()
     poll.embed = discord.Embed(
         title=f"**{poll.title}**",
-        description=f"{poll.text}\n❌ - Nevermind (removes reaction roles)\n⛔ - To end poll (Author only)",
+        description=f"{poll.text}\n❌ - Nevermind (removes reaction roles)"
+                    f"\n⛔ - To end poll (Author only)",
         color=discord.Color.from_rgb(67, 0, 255)
     )
     poll.embed.set_footer(text='React with the corresponding emoji!')
