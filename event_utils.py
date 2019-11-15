@@ -1,5 +1,6 @@
 """
-this file contains any bot command or method that controls the auto-announcements and the alarm logic
+this file contains any bot command or method that controls the auto-announcements and the alarm
+logic
 """
 import datetime
 import asyncio
@@ -276,15 +277,17 @@ async def manage_events(bot, ctx=None, today: bool = False, days: int = 14, auto
                 continue
 
             elif event.start_time is None:  # for events without a time
+                short = event.description
                 event_embed.add_field(name=event.date.strftime("%A (%m/%d/%y)"),
                                       value=f"➤ {event.title} "
-                                            f"{f'- {event.description}' if event.description is not None else ''}",
+                                            f"{f'- {short}' if short is not None else ''}",
                                       inline=False)
 
             else:  # for events with a time
+                short = event.description
                 event_embed.add_field(name=event.date.strftime("%A (%m/%d/%y)"),
                                       value=f"➤ {event.title} "
-                                            f"{f'- {event.description}' if event.description is not None else ''}\n"
+                                            f"{f'- {short}' if short is not None else ''}\n"
                                             f"━➤ *{event.start_time.strftime('%I:%M %p')} to "
                                             f"{event.end_time.strftime('%I:%M %p')}*",
                                       inline=False)

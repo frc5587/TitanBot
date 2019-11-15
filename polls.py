@@ -98,6 +98,34 @@ class Poll(PollBaseClass):
         await self.general_role.delete()
         return self
 
+    def checker(self, reaction, user):
+        """
+        Checks for the proper emojis in the reaction, and if the user is trying to end to poll, then
+        it checks to makes sure that user is the author of the poll. If it is not the right user or
+        emoji, then it removes the reaction using a asyncio loop
+
+        :param reaction:
+        :param user:
+        :return:
+        """
+        if reaction.message.id == self.message.id and user != self.message.author:
+            loop = asyncio.get_event_loop()
+
+            if str(reaction.emoji) == '⛔':
+                if user == self.author:
+                    return True
+
+            elif str(reaction.emoji) == '❌':
+                return True
+
+            # if the reaction is one of the choices for the poll
+            elif str(reaction.emoji) in self.emoji_list:
+                return True
+
+            loop.run_until_complete(self.message.remove_reaction(reaction, user))
+            loop.close()
+        return False
+
     async def reaction_watch_loop(self, bot) -> None:
         """
         Loop, when someone reacts to the message it removes all of their other reactions and gives
@@ -121,23 +149,7 @@ class Poll(PollBaseClass):
             :rtype: bool
             """
             # if valid message and real user
-            if reaction_.message.id == self.message.id and user != self.message.author:
-                loop = asyncio.get_event_loop()
-
-                if str(reaction_.emoji) == '⛔':
-                    if user == self.author:
-                        return True
-
-                elif str(reaction_.emoji) == '❌':
-                    return True
-
-                # if the reaction is one of the choices for the poll
-                elif str(reaction_.emoji) in self.emoji_list:
-                    return True
-
-                loop.run_until_complete(self.message.remove_reaction(reaction_, user))
-                loop.close()
-            return False
+            return self.checker(reaction_, user)
 
         while True:
             try:
