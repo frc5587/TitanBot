@@ -227,7 +227,7 @@ async def create_poll_embed(poll: Poll) -> (discord.Embed, Poll):
     """
     Creates the embed of the poll, collects the role information from the user, runs most of the
     higher level Poll class methods to organize the poll to be sent
-    
+
     :param poll: the poll being acted on
     :type poll: Poll
     :return: the embed that will be sent and the poll with all of the data
