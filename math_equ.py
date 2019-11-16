@@ -19,7 +19,7 @@ def organize(equation_list: List[str]) -> (Union[sympy.Symbol, None], str):
     equation_str = ""
     variable, ignore = None, None
     for element in equation_list:
-        if element.lower() == '-v':
+        if element == '-v':
             index = equation_list.index(element) + 1
             variable = sympy.Symbol(equation_list[index])
             ignore = equation_list[index]
@@ -49,7 +49,7 @@ def solve_equ(variable: sympy.Symbol, equation: str) -> List[str]:
     else:
         solved_answer = sympy.solve(equation, variable, dict=True)
     for ans in solved_answer:
-        answer.append(f"`{variable} = {sympy.N(list(ans.values())[0])}`\n")
+        answer.append(f"{variable} = {sympy.N(list(ans.values())[0])}\n")
     return answer
 
 

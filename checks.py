@@ -179,7 +179,7 @@ async def check_args(arg_list: List[str],
         else:
             arg_type = types[num]
 
-        if isinstance(arg_type, str):
+        if arg_type == str:
             # everything is a string, so if it wants a str, then it can just continue
             continue
 
@@ -187,7 +187,7 @@ async def check_args(arg_list: List[str],
             arg_list[num] = eval(arg)
             arg = eval(arg)
 
-        if isinstance(arg_type, float):  # ints are included in floats
+        if arg_type == float:  # ints are included in floats
             if not (isinstance(arg, float) or isinstance(arg, int)):
                 await extras.command_error(ctx, '707',
                                            f"Expected arg number {num} to be float or int, "
@@ -195,7 +195,7 @@ async def check_args(arg_list: List[str],
                 raise ValueError
             continue
 
-        elif isinstance(arg_type, int):
+        elif arg_type == int:
             if not (isinstance(arg, int)):
                 await extras.command_error(ctx, '707',
                                            f"Expected arg number {num} to be int, got {type(arg)}")

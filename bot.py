@@ -209,7 +209,7 @@ async def math(ctx, user_args: List[str]):
         math_embed = discord.Embed(
             title=f"`{equ}`",
             color=discord.Color.from_rgb(67, 0, 255),
-            description=''.join(answers)
+            description=f"```\n{''.join(answers)}\n```"
         )
         await ctx.channel.send(content=None, embed=math_embed)
     except Exception as e:
