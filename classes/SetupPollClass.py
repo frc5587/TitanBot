@@ -14,18 +14,17 @@ class SetupPoll(PollBaseClass):
         :param ctx: context for the message
         :type ctx: Object
         """
-        with open('cache/channels.txt', 'r') as f:  # reads all current ids on the text file (list)
-            channel_id_list = f.readlines()
+        channel_id_list = clear_and_find_channels()
 
-        if str(ctx.channel.id) not in channel_id_list:  # checks if channels is already in the list
+        if ctx.channel.id not in channel_id_list:  # checks if channels is already in the list
             await ctx.channel.send("This channel is not subscribed to the announcements")
             return
 
         else:
             for index, channel_id in enumerate(channel_id_list):
-                if channel_id == str(ctx.channel.id):
+                if channel_id == ctx.channel.id:
                     channel_id_list.pop(index)
-                    channel_str = '\n'.join(channel_id_list)
+                    channel_str = '\n'.join([str(chan) for chan in channel_id_list])
 
                     with open('cache/channels.txt', 'w') as f:  # deletes the channel id from text file
                         f.write(channel_str)
