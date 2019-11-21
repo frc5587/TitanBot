@@ -1,5 +1,5 @@
-discord.py
-mpmath
-sympy
-google-api-python-client
-google_auth_oauthlib
+discord.py==1.2.5
+mpmath==1.1.0
+sympy==1.4
+google-api-python-client==1.7.11
+google_auth_oauthlib==0.4.1
