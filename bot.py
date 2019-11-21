@@ -104,8 +104,6 @@ async def make_poll(ctx):
 
     :param ctx: context object for the message
     :type ctx: Object
-    :param user_args: args that the user passed in
-    :type: List[Union[int, float, str]]
     """
     try:
         await ctx.channel.send('Name your poll, then list out the options, one per message, '
@@ -123,7 +121,10 @@ async def make_poll(ctx):
         embed, poll = await polls.create_poll_embed(poll)
         poll.message = await ctx.channel.send(content=None, embed=embed)
         await poll.add_reactions()
-        await poll.reaction_watch_loop(bot)
+        await poll.save(bot)
+        await poll.get_compare_reactions()
+    except RuntimeError:
+        return
 
     except Exception as E:
         await ctx.channel.send(E)
@@ -326,12 +327,13 @@ async def game_presence() -> None:
             continue
 
 
-admin.make_channel_cache()
+admin.make_cache()
 checks.load_devs_config()
 
 bot.loop.create_task(event_utils.auto_announcements(bot))
 bot.loop.create_task(game_presence())
 bot.loop.create_task(server_list())
+bot.loop.create_task(polls.Poll.runall(bot))
 
 
 bot.run(token)

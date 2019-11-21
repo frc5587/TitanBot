@@ -5,21 +5,25 @@ from typing import List
 import os
 
 
-def make_channel_cache() -> bool:
+def make_cache() -> bool:
     """
     Creates the file and folder for caching the channels used in the auto announcement system.
-    Returns `True` if it created the file, and `False` if it didn't
+    Returns `True` if it created the file, and `False` if it didn't. It also creates to folder used
+    to cache the polls, `cache/polls/`
 
     :return: whether it created the file
     :rtype: bool
     """
-    if not os.path.exists('cache/channels.txt'):
+    if not os.path.exists('cache/channels.txt') or not os.path.exists('cache/polls'):
         try:
             os.mkdir('cache')
         except FileExistsError:
             pass
-        with open('cache/channels.txt', 'a+'):
+        try:
+            os.mkdir('cache/polls')
+        except FileExistsError:
             pass
+        open('cache/channels.txt', 'a+').close()
         return True
     return False
 
@@ -32,7 +36,7 @@ def clear_and_find_channels() -> List[int]:
     :return: list of all of the channel IDs
     :rtype: List[int]
     """
-    make_channel_cache()
+    make_cache()
 
     with open('cache/channels.txt', 'r+') as channels_file:
         lines = channels_file.readlines()
