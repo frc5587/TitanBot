@@ -34,17 +34,18 @@ def clear_and_find_channels() -> List[int]:
     """
     make_channel_cache()
 
-    with open('cache/channels.txt', 'r+') as channels_file:
+    with open('cache/channels.txt', 'r') as channels_file:
         lines = channels_file.readlines()
         final_list = []
         for line in lines:
             if line not in ['', '\n']:
                 final_list.append(line)
-        channels_file.seek(0)  # sets pointer to the beginning of the file
+
+    with open('cache/channels.txt', 'w') as channels_file:
         channels_file.writelines(final_list)
 
-        if lines == list():
-            raise ValueError
+    if lines == list():
+        raise ValueError("cache/channels.txt is empty!")
 
     return [int(channel) for channel in final_list]
 
