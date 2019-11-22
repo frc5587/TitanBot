@@ -1,5 +1,10 @@
 import pytest
+import sys
+
 import sympy
+
+sys.path.append("..")  # goes to directory above it
+
 import math_equ
 
 
