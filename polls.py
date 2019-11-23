@@ -2,6 +2,7 @@ import random
 from typing import List, Tuple
 import pickle
 import os
+import json
 
 import discord
 
@@ -94,7 +95,7 @@ class Poll(PollBaseClass):
         TODO replace the roles on the message so it doesn't say '@role-deleted'
         """
         os.remove(f'cache/polls/poll{self.file_number}.pickle')  # delete cache
-        os.remove(f'cache/polls/poll{self.file_number}.poTaTo')
+        os.remove(f'cache/polls/poll{self.file_number}.json')
 
         for role in self.roles:
             await role.delete()
@@ -161,8 +162,8 @@ class Poll(PollBaseClass):
                         role, not_roles = self.get_role(str(reaction.emoji))
                         await member.add_roles(role)
                         await member.add_roles(self.general_role)
-        except Exception as e:
-            print(e)
+        except ValueError:
+            pass  # says "Emoji is not in 'emoji_role_paired_list'" when poll ends
 
     async def remove_wrong_reactions(self, reaction_list: List[discord.Reaction]):
         """
@@ -195,24 +196,25 @@ class Poll(PollBaseClass):
         except Exception as e:
             print(f"**{e}**")
 
-    def write_important_stuff(self):
+    def write_context_data(self):
         """
         This writes all the IDs for the context objects down to some files in cache/polls/ and adds
         the file "number" that contains the data, to the object
         """
         counter = 0
         while os.path.exists(f'cache/polls/poll{counter}.pickle'):
-            counter += 1
+            counter += 1  # counts up till it finds and unused number
 
-        with open(f'cache/polls/poll{counter}.poTaTo', 'w+') as file:
-            file.write(f"{str(self.message.channel.id)}\n"
-                       f"{str(self.message.id)}\n"
-                       f"{str(self.general_role.id)}\n"
-                       f"{str(self.author.id)}\n")
-
-            for emoji, role in self.emoji_role_paired_list:
-                file.write(emoji + str(role.id) + "\n")
-        self.file_number = counter
+        with open(f'cache/polls/poll{counter}.json', 'w+') as json_file:
+            write_dict = {
+                "channel_id": self.message.channel.id,
+                "message_id": self.message.id,
+                "general_role_id": self.general_role.id,
+                "author_id": self.author.id,
+                "emoji_role_id": [[emoji, role.id] for emoji, role in self.emoji_role_paired_list]
+            }
+            json.dump(write_dict, json_file)
+        self.file_number = counter  # stores the file number
         return self
 
     async def save(self, bot):
@@ -224,7 +226,7 @@ class Poll(PollBaseClass):
         :param bot: client connection to discord
         :type bot: Object
         """
-        self.write_important_stuff()
+        self.write_context_data()
 
         # clear data
         self.emoji_role_paired_list = []
@@ -233,21 +235,21 @@ class Poll(PollBaseClass):
         self.message = None
         self.author = None
 
-        with open(f'cache/polls/poll{self.file_number}.pickle', 'wb+') as file:
-            pickle.dump(self, file)
+        with open(f'cache/polls/poll{self.file_number}.pickle', 'wb+') as pickle_file:
+            pickle.dump(self, pickle_file)
 
-        with open(f"cache/polls/poll{self.file_number}.poTaTo", "r") as file:
-            lines = file.readlines()
+        with open(f"cache/polls/poll{self.file_number}.json", "r") as json_file:
+            context_data = json.load(json_file)
 
         # get context objects back
-        channel = bot.get_channel(eval(lines.pop(0)))
-        self.message = await channel.fetch_message(eval(lines.pop(0)))
-        self.general_role = channel.guild.get_role(eval(lines.pop(0)))
-        self.author = channel.guild.get_member(eval(lines.pop(0)))
+        channel = bot.get_channel(context_data["channel_id"])
+        self.message = await channel.fetch_message(context_data["message_id"])
+        self.general_role = channel.guild.get_role(context_data["general_role_id"])
+        self.author = channel.guild.get_member(context_data["author_id"])
 
-        for line in lines:  # add roles back to lists
-            self.emoji_role_paired_list.append([line[0], channel.guild.get_role(eval(line[1:]))])
-            self.roles.append(channel.guild.get_role(eval(line[1:])))
+        for emoji, role_id in context_data["emoji_role_id"]:  # add roles back to lists
+            self.emoji_role_paired_list.append([emoji, channel.guild.get_role(role_id)])
+            self.roles.append(channel.guild.get_role(role_id))
         return self
 
     @staticmethod
@@ -264,29 +266,31 @@ class Poll(PollBaseClass):
         try:
             await bot.wait_until_ready()
             poll_list = []
-            pickle_file_list = sorted(os.listdir('cache/polls'))[::2]
-            potato_file_list = sorted(os.listdir('cache/polls'))[1::2]
+            pickle_file_list = sorted(os.listdir('cache/polls'))[1::2]
+            json_file_list = sorted(os.listdir('cache/polls'))[::2]
+            # `sorted` alphabetizes the files, and `[::2]` index every other file while `[1::2]`
+            # indexes every other file but with an offset of 1
 
             for num, file in enumerate(pickle_file_list):
-                with open('cache/polls/' + file, 'rb') as read_file:
-                    poll_list.append(pickle.load(read_file))
+                with open('cache/polls/' + file, 'rb') as pickle_file:
+                    poll_list.append(pickle.load(pickle_file))
 
-                with open('cache/polls/' + potato_file_list[num], 'r') as read_file2:
-                    lines = read_file2.readlines()
+                with open('cache/polls/' + json_file_list[num], 'r') as json_file:
+                    context_data = json.load(json_file)
 
-                channel: discord.TextChannel = bot.get_channel(eval(lines.pop(0)))
-                poll_list[num].message = await channel.fetch_message(eval(lines.pop(0)))
-                poll_list[num].general_role = channel.guild.get_role(eval(lines.pop(0)))
-                poll_list[num].author = channel.guild.get_member(eval(lines.pop(0)))
+                channel = bot.get_channel(context_data["channel_id"])
+                poll_list[num].message = await channel.fetch_message(context_data["message_id"])
+                poll_list[num].general_role = channel.guild.get_role(
+                    context_data["general_role_id"])
+                poll_list[num].author = channel.guild.get_member(context_data["author_id"])
 
-                for line in lines:  # add roles back to lists
-                    poll_list[num].emoji_role_paired_list\
-                        .append([line[0], channel.guild.get_role(eval(line[1:]))])
-
-                    poll_list[num].roles.append(channel.guild.get_role(eval(line[1:])))
+                for emoji, role_id in context_data["emoji_role_id"]:  # add roles back to lists
+                    poll_list[num].emoji_role_paired_list.append([emoji,
+                                                                  channel.guild.get_role(role_id)])
+                    poll_list[num].roles.append(channel.guild.get_role(role_id))
             return poll_list
         except Exception as ee:
-            print(ee)
+            print("loadall Exception: " + str(ee))
 
     @staticmethod
     async def runall(bot):
@@ -303,8 +307,8 @@ class Poll(PollBaseClass):
             for poll in poll_list:
                 bot.loop.create_task(poll.get_compare_reactions())
                 print("running poll: ", poll.title)
-        except Exception as ee:
-            print(ee)
+        except Exception as runall_exception:
+            print("runall Exception: " + str(runall_exception))
 
 
 async def get_roles(bot, ctx, check):
@@ -321,9 +325,9 @@ async def get_roles(bot, ctx, check):
     :return: list
     """
     action_list = []
-    emoji_list = ['🍇', '🍈', '🍉', '🍊', '🍋', '🍌', '🍍', '🍎', '🍏', '🍐', '🥝', '🍒']
+    emoji_list = ['🍇', '🍈', '🍉', '🍊', '🍋', '🍌', '🍍', '🍎', '🍏', '🍐', '🥝', '🍒', '🥭', '🍓',
+                  '🍅', '🥑', '🍑', '🥥', '🌶', '🌽', '🥔']
     random.shuffle(emoji_list)
-    # TODO make emoji_list longer
     while True:
         msg = await bot.wait_for('message', check=check)
         if msg.content.lower() == 'done':

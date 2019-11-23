@@ -323,7 +323,7 @@ async def game_presence() -> None:
             await bot.change_presence(activity=discord.Game(status))
             await asyncio.sleep(10)
         except Exception as exc:  # I'm too lazy to figure out which one is crashing the bot
-            print(exc)
+            print("game_presence Exception: " + str(exc))
             continue
 
 
