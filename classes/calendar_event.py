@@ -81,7 +81,7 @@ class Event:
         end_time = self.end_time.strftime(
             '%I:%M %p') if self.end_time is not None else None
 
-        return f"\nCalendar:        {self.calendar_name}\n" \
+        return f"Calendar:        {self.calendar_name}\n" \
                f"Event Name:      {self.title}\n" \
                f"Description:     {self.description}\n"\
                f"Date:            {date}\n" \
