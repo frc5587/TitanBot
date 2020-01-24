@@ -14,6 +14,8 @@ import admin
 from math_equ import math_main
 from tokens import read_discord_token
 
+START_TIME = datetime.datetime.now()
+
 
 token = read_discord_token()
 bot = commands.Bot(command_prefix=['-', './'], case_insensitive=True)
@@ -74,8 +76,8 @@ async def test(ctx):
     :param ctx: context object for the message
     :type ctx: Object
     """
-    await ctx.channel.send(f"Confirmed."
-                           f"\nLocal time: {datetime.datetime.now().strftime('%H:%M:%S')}")
+    await ctx.channel.send(f"Local time: {datetime.datetime.now().strftime('%H:%M:%S')}\n"
+                           f"Uptime: {(datetime.datetime.now() - START_TIME).seconds / 60**2}")
 
 
 @checks.is_dev()
