@@ -77,7 +77,7 @@ async def test(ctx):
     :type ctx: Object
     """
     await ctx.channel.send(f"Local time: {datetime.datetime.now().strftime('%H:%M:%S')}\n"
-                           f"Uptime: {(datetime.datetime.now() - START_TIME).seconds / 60**2}")
+                           f"Uptime: {round((datetime.datetime.now() - START_TIME).seconds / 60**2, 2)} hours")
 
 
 @checks.is_dev()
