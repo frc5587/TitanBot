@@ -1,5 +1,6 @@
 import datetime
 import pickle
+
 from googleapiclient.discovery import build
 from google.auth.transport.requests import Request
 
@@ -11,8 +12,8 @@ class CalendarAPI:
 
     def __init__(self):
         """
-        There is nothing that you need to pass through, if you need to change the scopes you need to just edit the
-        self.scopes line and regenerate the tokens/calendar-token.pickle
+        There is nothing that you need to pass through, if you need to change the scopes you need to
+        just edit the self.scopes line and regenerate the tokens/calendar-token.pickle
         """
         self.scopes = ['https://www.googleapis.com/auth/calendar.readonly']
         self.token_location = 'tokens/calendar-token.pickle'
@@ -51,7 +52,9 @@ class CalendarAPI:
         """
         now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
         for calendar_raw in self.service.calendarList().list().execute().get('items'):
-            calendar = self.service.events().list(calendarId=calendar_raw.get('id'), timeMin=now, singleEvents=True,
+            calendar = self.service.events().list(calendarId=calendar_raw.get('id'),
+                                                  timeMin=now,
+                                                  singleEvents=True,
                                                   orderBy='startTime').execute()
             self.calendars.append(EventCalendar(calendar, self.service).organize())
         return self

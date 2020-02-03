@@ -118,9 +118,9 @@ def should_attempt_decrypt(unencrypted_file: str) -> bool:
 def attempt_decrypt(encrypted_file: str, decrypt_type: str) -> None:
     """
     Attempts to decrypt the encrypted file provided by passing the decrypt type provided
-    into `decrypt-tokens.sh`. The method checks that encrypted_file exists and then passes decrypt_type to the
-    `./scripts/decrypt-tokens` script if it does. Valid values for `decrypt_type` are "discord",
-    "calendar", and "gtoken".
+    into `decrypt-tokens.sh`. The method checks that encrypted_file exists and then passes decrypt_
+    type to the `./scripts/decrypt-tokens` script if it does. Valid values for `decrypt_type` are
+    "discord", "calendar", and "gtoken".
 
     :param encrypted_file: the path of the file to decrypt
     :type encrypted_file: str

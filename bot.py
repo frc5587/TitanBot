@@ -1,9 +1,10 @@
-import discord
-from discord.ext import commands
 import random
 import asyncio
 import datetime
 from typing import Union, List
+
+import discord
+from discord.ext import commands
 
 import event_utils
 import extras
@@ -13,6 +14,8 @@ import admin
 from math_equ import math_main
 from tokens import read_discord_token
 
+START_TIME = datetime.datetime.now()
+
 
 token = read_discord_token()
 bot = commands.Bot(command_prefix=['-', './'], case_insensitive=True)
@@ -21,31 +24,50 @@ bot.remove_command("help")
 # listing commands for the help command
 
 extras.Commands('Die', 'Kills the bot', '-die', 'Dev')
-extras.Commands('MakePoll', 'Makes a reaction style poll; you add in options after you send the -makepoll command',
-                '-makepoll', 'Dev, Admin, FRC Leadership')
-extras.Commands('Events', 'Displays events from the team calendar for today unless an amount of days is specified',
-                '-events <O: num days>', 'None')
-extras.Commands('Channels', 'Lists which channels are subscribed to the auto announcements', '-channels', 'Dev')
-extras.Commands('Setup', 'Starts the auto announcement system', '-setup', 'Dev, Admin, FRC Leadership')
+extras.Commands('MakePoll',
+                'Makes a reaction style poll; you add in options '
+                'after you send the -makepoll command',
+                '-makepoll',
+                'Dev, Admin, FRC Leadership')
+extras.Commands('Events',
+                'Displays events from the team calendar for today '
+                'unless an amount of days is specified',
+                '-events <O: num days>',
+                'None')
+extras.Commands('Channels',
+                'Lists which channels are subscribed to the auto announcements',
+                '-channels',
+                'Dev')
+extras.Commands('Setup', 'Starts the auto announcement system',
+                '-setup',
+                'Dev, Admin, FRC Leadership')
 extras.Commands('Math',
                 "Solves math equations/expressions. "
                 "Use the flag '-v' to specify the variable that you want to solve for",
-                '-math <expression/equation> O: -v <variable to solve for>', 'None')
-extras.Commands('Test', 'Used to check if bot is running; says "Confirmed." if so', '-test', 'None')
-extras.Commands('SetAlarm', "Sets an alarm to happen at the time specified by '-t' (HH:MM, 24 hour clock) and pings"
-                            "anything specified by ‘-p’. If you want to ping multiple people use '-p' multiple times."
-                            "\nPlease note that 12am, which would be 24:00, is expressed as 00:00",
-                '-setalarm -t <HH:MM> -p <@mention>', 'None')
-extras.Commands('Help', "Shows the help page. To learn more about specific commands, do '-help <command>'",
-                '-help <O: command>', 'None')
+                '-math <expression/equation> O: -v <variable to solve for>',
+                'None')
+extras.Commands('Test',
+                'Used to check if bot is running; says "Confirmed." if so',
+                '-test',
+                'None')
+extras.Commands('SetAlarm',
+                "Sets an alarm to happen at the time specified by '-t' (HH:MM, 24 hour clock) and "
+                "pings anything specified by ‘-p’. If you want to ping multiple people use '-p' "
+                "multiple times.\nPlease note that 12am, which would be 24:00, "
+                "is expressed as 00:00",
+                '-setalarm -t <HH:MM> -p <@mention>',
+                'None')
+extras.Commands('Help',
+                "Shows the help page. To learn more about specific commands, do '-help <command>'",
+                '-help <O: command>',
+                'None')
 
 
 # ------------- Start of commands ------------
 
 
 @bot.command(name='test')
-@checks.get_args_in_message()
-async def test(ctx, user_args: List):
+async def test(ctx):
     """
     Confirmation that the bot is up and local time
 
@@ -53,16 +75,14 @@ async def test(ctx, user_args: List):
 
     :param ctx: context object for the message
     :type ctx: Object
-    :param user_args: args that the user passed in
-    :type: List[Union[int, float, str]]
     """
-    await ctx.channel.send(f"Confirmed.\nLocal time: {datetime.datetime.now().strftime('%H:%M:%S')}")
+    await ctx.channel.send(f"Local time: {datetime.datetime.now().strftime('%H:%M:%S')}\n"
+                           f"Uptime: {round((datetime.datetime.now() - START_TIME).seconds / 60**2, 2)} hours")
 
 
 @checks.is_dev()
 @bot.command(name="die")
-@checks.get_args_in_message()
-async def die(ctx, user_args: List):
+async def die(ctx):
     """
     Kills bot
 
@@ -70,8 +90,6 @@ async def die(ctx, user_args: List):
 
     :param ctx: context object for the message
     :type ctx: Object
-    :param user_args: args that the user passed in
-    :type: List[Union[int, float, str]]
     """
     await ctx.channel.send('Ok, bye bye')
     raise SystemExit("Used command '-die'")
@@ -79,18 +97,15 @@ async def die(ctx, user_args: List):
 
 @checks.is_admin('FRC Leadership')
 @bot.command(name='makepoll')
-@checks.get_args_in_message()
-async def make_poll(ctx, user_args: List):
+async def make_poll(ctx):
     """
-    Makes a poll that assigns a role for reacting and a reaction specific role, it can only be ended by the author of
-    the poll
+    Makes a poll that assigns a role for reacting and a reaction specific role, it can only be ended
+    by the author of the poll
 
     permissions needed: Admin, FRC Leadership
 
     :param ctx: context object for the message
     :type ctx: Object
-    :param user_args: args that the user passed in
-    :type: List[Union[int, float, str]]
     """
     try:
         await ctx.channel.send('Name your poll, then list out the options, one per message, '
@@ -108,7 +123,10 @@ async def make_poll(ctx, user_args: List):
         embed, poll = await polls.create_poll_embed(poll)
         poll.message = await ctx.channel.send(content=None, embed=embed)
         await poll.add_reactions()
-        await poll.reaction_watch_loop(bot)
+        await poll.save(bot)
+        await poll.get_compare_reactions()
+    except RuntimeError:
+        return
 
     except Exception as E:
         await ctx.channel.send(E)
@@ -118,7 +136,8 @@ async def make_poll(ctx, user_args: List):
 @checks.get_args_in_message(max_args=1, arg_types=[int])
 async def events(ctx, user_args: List[Union[int, float, str]]):
     """
-    Calls the calendar api and read the calendar and gets the events happening within the amount of days specified,
+    Calls the calendar api and read the calendar and gets the events happening within the amount of
+    days specified,
     sends them within an embed
 
     Permissions needed: None
@@ -141,8 +160,7 @@ async def events(ctx, user_args: List[Union[int, float, str]]):
 
 @checks.is_dev()
 @bot.command(name='channels')
-@checks.get_args_in_message()
-async def channel_test(ctx, user_args: List):
+async def channel_test(ctx):
     """
     Debugging command, sends a message to every channel written in channels.txt
 
@@ -150,8 +168,6 @@ async def channel_test(ctx, user_args: List):
 
     :param ctx: context object for the message
     :type ctx: Object
-    :param user_args: args that the user passed in
-    :type: List[Union[int, float, str]]
     """
     try:
         await admin.channels(bot, ctx)
@@ -161,8 +177,7 @@ async def channel_test(ctx, user_args: List):
 
 @checks.is_admin('FRC Leadership')
 @bot.command(name='setup')
-@checks.get_args_in_message()
-async def setup(ctx, user_args: List):
+async def setup(ctx):
     """
     If the process is successful then it reads the channel id and writes it to channels.txt
 
@@ -170,8 +185,6 @@ async def setup(ctx, user_args: List):
 
     :param ctx: context object for the message
     :type ctx: Object
-    :param user_args: args that the user passed in
-    :type: List[Union[int, float, str]]
     """
     try:
         await event_utils.setup(ctx, bot)
@@ -183,7 +196,8 @@ async def setup(ctx, user_args: List):
 @checks.get_args_in_message(min_args=1, max_args=9999, arg_types=str)
 async def math(ctx, user_args: List[str]):
     """
-    Solves either a math equation or expression. It can hang if the expression is too complex, e.g. 5587^5587^5587
+    Solves either a math equation or expression. It can hang if the expression is too complex, e.g.
+    5587^5587^5587
 
     Permissions needed: None
 
@@ -198,7 +212,7 @@ async def math(ctx, user_args: List[str]):
         math_embed = discord.Embed(
             title=f"`{equ}`",
             color=discord.Color.from_rgb(67, 0, 255),
-            description=''.join(answers)
+            description=f"```\n{''.join(answers)}\n```"
         )
         await ctx.channel.send(content=None, embed=math_embed)
     except Exception as e:
@@ -209,7 +223,8 @@ async def math(ctx, user_args: List[str]):
 @checks.get_args_in_message(min_args=4, max_args=99999, arg_types=str)
 async def setalarm(ctx, user_args: List[str]):
     """TODO make this function better
-    Creates and alarm that pings people specified at the time (24hr clock) specified. Currectly only works for the
+    Creates and alarm that pings people specified at the time (24hr clock) specified. Currectly only
+    works for the
     current day (it can't do any days in advance)
 
     Permissions needed: None
@@ -274,7 +289,8 @@ async def on_command_error(ctx, error):
     :type error: Exception
     """
     if isinstance(error, commands.errors.CommandNotFound):
-        await extras.command_error(ctx, '404', 'command not found', command=ctx.message.content.split()[0][1:])
+        await extras.command_error(ctx, '404', 'command not found',
+                                   command=ctx.message.content.split()[0][1:])
 
 
 # ---------- End of commands -------------
@@ -309,16 +325,17 @@ async def game_presence() -> None:
             await bot.change_presence(activity=discord.Game(status))
             await asyncio.sleep(10)
         except Exception as exc:  # I'm too lazy to figure out which one is crashing the bot
-            print(exc)
+            print("game_presence Exception: " + str(exc))
             continue
 
 
-admin.make_channel_cache()
+admin.make_cache()
 checks.load_devs_config()
 
 bot.loop.create_task(event_utils.auto_announcements(bot))
 bot.loop.create_task(game_presence())
 bot.loop.create_task(server_list())
+bot.loop.create_task(polls.Poll.runall(bot))
 
 
 bot.run(token)

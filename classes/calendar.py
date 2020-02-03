@@ -10,14 +10,14 @@ class EventCalendar:
                  build=None,
                  list_of_events: List[Event] = None):
         """
-        Object representing a list of events from a specific google calendar, you can index it to get events through
-        that date or just with ints and slices
+        Object representing a list of events from a specific google calendar, you can index it to
+        get events through that date or just with ints and slices
 
         :param calendar_dict: Contains all of the events in the calendar
         :type calendar_dict: dict
         :param build: The object used to interact with the Google API
         :type build: Object
-        :param list_of_events: Only used to create a full comprehensive calendar with events already in Event format
+        :param list_of_events: Used to create a full calendar with events already in Event format
         :type list_of_events: List[Event]
         """
         self.calendar_dict = calendar_dict
@@ -27,7 +27,8 @@ class EventCalendar:
 
     def organize(self):
         """
-        For every DooDoo style Google event dict in self.list_of_events_raw it creates a nice Event class for each one
+        For every DooDoo style Google event dict in self.list_of_events_raw it creates a nice Event
+        class for each one
         """
         self.list_of_events_raw = self.calendar_dict.get(
             'items')  # get events in the calendar
@@ -68,7 +69,8 @@ class EventCalendar:
 
     def combine(self, calendars: list) -> List[Event]:
         """
-        Combines this calendar and any others in calendars to make one large list of events, this is an unsorted list
+        Combines this calendar and any others in calendars to make one large list of events, this is
+        an unsorted list
 
         :param calendars: A list of EventCalendar objects, they all get combined
         :type calendars: List[EventCalendar]
@@ -82,7 +84,8 @@ class EventCalendar:
 
     def find_empty_days(self):
         """
-        Iterates through all of the days in self.list_of_events and find days that don't have events for them, then it
+        Iterates through all of the days in self.list_of_events and find days that don't have events
+        for them, then it
         adds "blank" events stating that there are no events that day
         """
         today = datetime.datetime.today().date() - datetime.timedelta(days=1)

@@ -1,8 +1,10 @@
-import discord
 import json
-import extras
-from discord.ext.commands import check
 from typing import List, Type, Callable, Union
+
+import discord
+from discord.ext.commands import check
+
+import extras
 
 
 DEVS = []
@@ -10,7 +12,8 @@ DEVS = []
 
 def load_devs_config():
     """
-    It parses config.json for the list of devs, then it updates the global constant DEVS with the list of IDs
+    It parses config.json for the list of devs, then it updates the global constant DEVS with the
+    list of IDs
     """
     global DEVS
     with open("config.json", "a+") as file:
@@ -81,7 +84,8 @@ def is_admin(*roles: List[str]) -> Callable:
 
 def is_dev() -> Callable:
     """
-    Checks is a person is a dev (Max and Brendan, or any else in cache/devs.txt), used for developer commands
+    Checks is a person is a dev (Max and Brendan, or any else in cache/devs.txt), used for developer
+    commands
 
     :return: if they are admin
     :rtype: check()
@@ -97,8 +101,9 @@ def is_dev() -> Callable:
 
 async def get_arg_list(message: str, ctx) -> List[str]:
     """
-    Splits the other args that the user sends with tho command, e.g. if the send `-test 1 2 "foo bar"` it will return
-    [1, 2, "foo bar"], because it looks for quotation marks to signify an arg that has spaces in it
+    Splits the other args that the user sends with tho command, e.g. if they send:
+    `-test 1 2 "foo bar"` it will return [1, 2, "foo bar"], because it looks for quotation marks to
+    signify an arg that has spaces in it
 
     :param message: the message that the user sends
     :type message: str
@@ -141,8 +146,8 @@ async def check_args(arg_list: List[str],
                      types: Union[List[Type], Type],
                      ctx) -> List[Union[int, float, str]]:
     """
-    This first checks to see if there are too many or too little args, in that case it sends out an error message. Then
-    it iterates through all of the args checking that they are the right type
+    This first checks to see if there are too many or too little args, in that case it sends out an
+    error message. Then it iterates through all of the args checking that they are the right type
 
     str: includes all
     float: includes int and float
@@ -163,7 +168,8 @@ async def check_args(arg_list: List[str],
     """
     if not (min_args <= len(arg_list) <= max_args):
         await extras.command_error(ctx, '808',
-                                   f"Expected between {min_args} and {max_args} args, got {len(arg_list)} args ")
+                                   f"Expected between {min_args} and {max_args} args, "
+                                   f"got {len(arg_list)} args ")
         raise ValueError
     for num, arg in enumerate(arg_list):
 
@@ -173,21 +179,23 @@ async def check_args(arg_list: List[str],
         else:
             arg_type = types[num]
 
-        if isinstance(arg_type, str):  # everything is a string, so if it wants a str, then it can just continue
+        if arg_type == str:
+            # everything is a string, so if it wants a str, then it can just continue
             continue
 
         elif arg.isdigit():  # parse arg, if it can
             arg_list[num] = eval(arg)
             arg = eval(arg)
 
-        if isinstance(arg_type, float):  # ints are included in floats
+        if arg_type == float:  # ints are included in floats
             if not (isinstance(arg, float) or isinstance(arg, int)):
                 await extras.command_error(ctx, '707',
-                                           f"Expected arg number {num} to be float or int, got {type(arg)}")
+                                           f"Expected arg number {num} to be float or int, "
+                                           f"got {type(arg)}")
                 raise ValueError
             continue
 
-        elif isinstance(arg_type, int):
+        elif arg_type == int:
             if not (isinstance(arg, int)):
                 await extras.command_error(ctx, '707',
                                            f"Expected arg number {num} to be int, got {type(arg)}")
@@ -201,11 +209,12 @@ def get_args_in_message(min_args: int = 0,
                         max_args: int = 0,
                         arg_types: Union[List[Type], Type] = None) -> Callable:
     """
-    This should decorate every command function on the bot. It will parse the user's message, then if the args that it
-    finds don't match up with the expect types, or there are too few/many, it will send an error message saying so,
-    otherwise, it will pass the list of args into the command function. For the types, putting str, basically means the
-    type doesn't matter, and any time a float is asked for, an int will be accepted in the arg as well. If just one type
-    is passed into `arg_types`, then it will assume all of the args are supposed to be that type.
+    This should decorate every command function on the bot. It will parse the user's message, then
+    if the args that it finds don't match up with the expect types, or there are too few/many, it
+    will send an error message saying so, otherwise, it will pass the list of args into the command
+    function. For the types, putting str, basically means the type doesn't matter, and any time a
+    float is asked for, an int will be accepted in the arg as well. If just one type is passed into
+    `arg_types`, then it will assume all of the args are supposed to be that type.
 
     :param min_args: minimum amount of args allowed
     :type min_args: int

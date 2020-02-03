@@ -14,23 +14,24 @@ class SetupPoll(PollBaseClass):
         :param ctx: context for the message
         :type ctx: Object
         """
-        with open('cache/channels.txt', 'r') as f:  # reads all current ids on the text file (list)
-            channel_id_list = f.readlines()
+        channel_id_list = clear_and_find_channels()
 
-        if str(ctx.channel.id) not in channel_id_list:  # checks if channels is already in the list
+        if ctx.channel.id not in channel_id_list:  # checks if channels is already in the list
             await ctx.channel.send("This channel is not subscribed to the announcements")
             return
 
         else:
             for index, channel_id in enumerate(channel_id_list):
-                if channel_id == str(ctx.channel.id):
+                if channel_id == ctx.channel.id:
                     channel_id_list.pop(index)
-                    channel_str = '\n'.join(channel_id_list)
+                    channel_str = '\n'.join([str(chan) for chan in channel_id_list])
 
-                    with open('cache/channels.txt', 'w') as f:  # deletes the channel id from text file
+                    with open('cache/channels.txt', 'w') as f:
+                        # deletes the channel id from text file
                         f.write(channel_str)
 
-                    await ctx.channel.send("This channel has now been unsubscribed from the announcements")
+                    await ctx.channel.send("This channel has now been unsubscribed "
+                                           "from the announcements")
 
     @staticmethod
     async def subscribe(ctx):
@@ -55,8 +56,9 @@ class SetupPoll(PollBaseClass):
 
     async def sub_to_auto_announcements(self, bot, ctx):
         """
-        Waits for a reaction (either ✅ or ❌) then it acts accordingly, if it is a check it adds it to channels.txt if
-        it isn't on already, if it is the X then it removes it from channels.txt, if it hasn't been already
+        Waits for a reaction (either ✅ or ❌) then it acts accordingly, if it is a check it adds it
+        to cache/channels.txt if it isn't on already, if it is the X then it removes it from
+        cache/channels.txt, if it hasn't been already
 
         :param bot: connection
         :param ctx: context for the message
@@ -78,7 +80,8 @@ class SetupPoll(PollBaseClass):
 
         self.embed = discord.Embed(
             title=f"**{self.title}**",
-            description=f"Do you want to subscribe (✅) or unsubscribe (❌) from the auto-announcements?",
+            description=f"Do you want to subscribe (✅) or unsubscribe (❌) "
+                        f"from the auto-announcements?",
             color=discord.Color.from_rgb(67, 0, 255)
         )
         self.embed.set_footer(text='React with the corresponding emoji!')
