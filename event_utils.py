@@ -9,8 +9,7 @@ from typing import List, Union
 import discord
 
 import extras
-from admin import clear_and_find_channels
-from classes.SetupPollClass import SetupPoll
+from classes.setup_poll import SetupPoll
 from classes.calendar_api import CalendarAPI
 from classes.calendar import EventCalendar
 from classes.calendar_event import Event
@@ -27,11 +26,9 @@ async def setup(ctx, bot) -> None:
     :param bot: client connection to discord
     :type bot: Object
     """
-    setup_poll = SetupPoll(['✅', '❌'], ctx.message.author, 'Auto-announcements')
-    await setup_poll.create_poll_embed()
-    setup_poll.message = await ctx.channel.send(embed=setup_poll.embed, content=None)
-    await setup_poll.add_reactions()
-    await setup_poll.sub_to_auto_announcements(bot, ctx)  # blocking
+    setup_poll = SetupPoll(ctx.message.author, bot)
+    await setup_poll.start(ctx.channel)
+    await setup_poll.loop()
 
 
 async def alarm(time: datetime.time, content: str, ctx, pings: str):
@@ -85,15 +82,15 @@ async def check_for_errors(ctx, time: str, pings: str) -> (datetime.time, str):
     :rtype: datetime.time, str
     """
     if time is None:
-        await extras.command_error(ctx, '505', "Missing arg '-t'", missing_args='-t')
+        await extras.command_error(ctx, '505', missing_args='-t')
         return
     elif pings == "":
-        await extras.command_error(ctx, '505', "Missing arg '-p'", missing_args='-p')
+        await extras.command_error(ctx, '505', missing_args='-p')
         return
     try:
         time = datetime.datetime.strptime(time, "%H:%M").time()
     except TypeError:
-        await extras.command_error(ctx, '707', "Bad input, '-t' arg must be in format: HH:MM")
+        await extras.command_error(ctx, '707', extra="'-t' arg must be in format: HH:MM")
         return
     return time, pings
 
@@ -119,21 +116,21 @@ def create_event_embed(is_today: bool, events_exist: bool, num_days: int = None)
     if events_exist and is_today:
         embed = discord.Embed(
             title="**Events Today**",
-            color=discord.Color.from_rgb(67, 0, 255))
+            color=extras.Colors.purple)
     elif is_today and not events_exist:
         embed = discord.Embed(
             title=f'There are no events today',
-            color=discord.Color.from_rgb(67, 0, 255))
+            color=extras.Colors.purple)
     elif not is_today and events_exist:
         embed = discord.Embed(
             title=f"**Events happening through "
                   f"{f'the next {num_days} days' if num_days != 1 else 'tomorrow'}**",
-            color=discord.Color.from_rgb(67, 0, 255))
+            color=extras.Colors.purple)
     else:
         embed = discord.Embed(
             title=f"**There are no events happening through "
                   f"{f'the next {num_days} days' if num_days != 1 else 'tomorrow'}**",
-            color=discord.Color.from_rgb(67, 0, 255))
+            color=extras.Colors.purple)
     return embed
 
 
@@ -316,14 +313,13 @@ async def auto_announcements(bot):
         if WHAT_TIME_IS_IT('?'):  # True if it is 9:30
             this_day = datetime.datetime.today().weekday()
             try:
-                channels = clear_and_find_channels()  # reads channel ids
                 # if it is sunday and it hasn't already sent a message
                 if datetime.datetime.today().weekday() == 6 and this_day != last_day:
-                    await manage_events(bot, today=False, channels=channels)
+                    await manage_events(bot, today=False, channels=extras.SYSTEM_CONFIG['channels'])
                     last_day = this_day
                     await asyncio.sleep(9999)
                 elif this_day != last_day:  # if it is not sunday and hasn't already sent a message
-                    await manage_events(bot, days=3, channels=channels)
+                    await manage_events(bot, days=3, channels=extras.SYSTEM_CONFIG['channels'])
                     last_day = this_day
                     await asyncio.sleep(9999)
             except ValueError:
