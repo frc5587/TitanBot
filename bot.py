@@ -2,6 +2,7 @@
 import asyncio
 import datetime
 from typing import Union, List
+import re
 
 import discord
 from discord.ext import commands
@@ -89,7 +90,7 @@ async def events(ctx, user_args: List[Union[int, float, str]]):
     """
     await ctx.channel.trigger_typing()
     if len(user_args) == 1:
-        embed = await event_utils.manage_events(bot, ctx=ctx, days=user_args[0], auto=False)
+        embed = await event_utils.manage_events(bot, days=user_args[0], auto=False)
     else:  # len(user_args) == 0:
         embed = await event_utils.manage_events(bot, today=True, auto=False)
     await ctx.channel.send(embed=embed)
@@ -146,14 +147,14 @@ async def math(ctx, user_args: List[str]):
 
 @command_group.new_command(name="SetAlarm",
                            description="Sets an alarm to happen at the time specified by '-t' "
-                                       "(HH:MM, 24 hour clock) and pings anything specified by "
-                                       "‘-p’. If you want to ping multiple people use '-p' multiple"
-                                       " times.\nPlease note that 12am, which would be 24:00, is "
+                                       "(HH:MM, 24 hour clock) and pings anyone in your message. "
+                                       "You can add an optional message\n"
+                                       "Please note that 12am, which would be 24:00, is "
                                        "expressed as 00:00",
-                           syntax="-setalarm -t <HH:MM> -p <@mention>", min_args=4)
+                           syntax="-setalarm -t <HH:MM> <O: @mention...> <O: message>", min_args=4)
 async def setalarm(ctx, user_args: List[str]):
     """TODO make this function better
-    Creates and alarm that pings people specified at the time (24hr clock) specified. Currectly only
+    Creates and alarm that pings people specified at the time (24hr clock) specified. Currently only
     works for the
     current day (it can't do any days in advance)
 
@@ -164,26 +165,25 @@ async def setalarm(ctx, user_args: List[str]):
     :param user_args: args that the user passed in
     :type: List[Union[int, float, str]]
     """
-    static_message_list = user_args
-    pings = ""
-    time = None
-    for i in static_message_list:
-        if i == '-t':
-            index = user_args.index(i) + 1
-            time = user_args[index]
-            user_args[index - 1] = None
-            user_args[index] = None
-        elif i == '-p':
-            index = user_args.index(i) + 1
-            pings += f"{user_args[index]} "
-            user_args[index - 1] = None
-            user_args[index] = None
-    time, pings = await event_utils.check_for_errors(ctx, time, pings)
-    reminder = ""
-    for i in user_args:
-        if i is not None:
-            reminder += f"{i} "
-    bot.loop.create_task(event_utils.alarm(time, reminder, ctx, pings))
+    try:
+        t = user_args.index('-t')
+    except IndexError:
+        await extras.command_error(ctx, '505', missing_args='-t')
+        raise
+
+    try:
+        time = datetime.datetime.strptime(user_args[t + 1], "%H:%M").time()
+    except TypeError:
+        await extras.command_error(ctx, '707', extra="'-t' arg must be in format: HH:MM")
+        raise
+    del user_args[t:t+2]
+
+    message = " ".join(user_args)
+
+    pings = " ".join(re.findall(r"<@.*>", message))
+    message = re.sub(r"<@.*>", message, "")
+
+    bot.loop.create_task(event_utils.alarm(time, message, ctx, pings))
 
 
 @command_group.new_command(name="help", description="Help command", syntax="-help <O: command>",

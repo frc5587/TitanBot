@@ -155,9 +155,13 @@ class CommandGroup:
                 except ValueError:
                     return await command_error(ctx, '707')
 
-                # if ctx.channel.id not in SYSTEM_CONFIG['channels'].values() and not isinstance(
-                #         ctx.channel, discord.DMChannel):
-                #     return
+                if frc_leadership_command and isinstance(ctx.author, discord.User):
+                    return await command_error(ctx, '303', missing_permissions="FRC Leadership",
+                                               extra="This only works on a server channel, not in "
+                                                     "DMs")
+                
+                if frc_leadership_command and "FRC Leadership" not in [str(r) for r in ctx.author.roles]:
+                    return await command_error(ctx, '303', missing_permissions="FRC Leadership")
 
                 if dm_only and not isinstance(ctx.channel, discord.DMChannel):
                     return await command_error(ctx, '909')
@@ -308,10 +312,12 @@ async def helper(ctx, user_arg, command_group: CommandGroup):
     else:
         embed = discord.Embed(
             title='Help',
-            description='prefix: -\ngeneral format: -<command>  <O: additional argument(s)>\n',
+            description='prefix: -\ngeneral format: -<command>  <O: additional argument(s)>\n'
+                        '`O:` means that the arg is optional and `...` means the arg can be '
+                        'repeated infinite times',
             color=Colors.purple
         )
-        embed.set_footer(text='O: means that the arg is optional')
+        embed.set_footer(text='')
         embed.add_field(name="Command", value=command_group.command_str, inline=True)
         await ctx.channel.send(content=None, embed=embed)
 
