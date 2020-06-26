@@ -32,7 +32,23 @@ def organize(equation_list: List[str]) -> (Union[sympy.Symbol, None], str):
     return variable, equation_str, equation_str_copy
 
 
-def solve_equ(variable: sympy.Symbol, equation: str) -> List[str]:
+def parse_equ(equation: str) -> sympy.Add:
+    """
+    This parses the string form of the equation and returns something that is more usable to sympy
+
+    :param equation: The equation to be parsed
+    :type equation: str
+    :return: The parsed equation
+    :rtype: sympy.Add
+    """
+    return sympy_parser.parse_expr(
+        equation,
+        transformations=sympy_parser.standard_transformations +
+        (sympy_parser.implicit_multiplication,))
+
+
+def solve_equ(variable: Union[sympy.Symbol, None],
+              equation: Union[sympy.Add, int, float]) -> List[str]:
     """
     If it is just an expression it will simplify it, otherwise it will solve it and return all
     possible answers in a list, with backticks (`) around it so it can be a little code segment with
@@ -64,9 +80,6 @@ def math_main(user_input: List[str]) -> (List[str], str):
     :rtype: List[str], str
     """
     variable, equation, copy = organize(user_input)
-    simplified_equ = sympy_parser.parse_expr(
-        equation,
-        transformations=sympy_parser.standard_transformations +
-        (sympy_parser.implicit_multiplication,))
+    simplified_equ = parse_equ(equation)
     answers = solve_equ(variable, simplified_equ)
     return answers, copy

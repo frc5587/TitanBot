@@ -145,3 +145,4 @@ discord-token.*
 
 # Cache files
 cache/
+.pytest_cache
