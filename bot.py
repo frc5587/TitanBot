@@ -1,86 +1,52 @@
-import random
+#!/usr/bin/env python3
 import asyncio
 import datetime
 from typing import Union, List
+import re
 
 import discord
 from discord.ext import commands
+from websockets import exceptions
+import logging
 
 import event_utils
 import extras
-import checks
-import polls
-import admin
-from math_equ import math_main
 from tokens import read_discord_token
+import bot_commands
+from classes import poll
+
+START_TIME = datetime.datetime.now()
 
 
 token = read_discord_token()
 bot = commands.Bot(command_prefix=['-', './'], case_insensitive=True)
 bot.remove_command("help")
 
-# listing commands for the help command
-
-extras.Commands('Die', 'Kills the bot', '-die', 'Dev')
-extras.Commands('MakePoll',
-                'Makes a reaction style poll; you add in options '
-                'after you send the -makepoll command',
-                '-makepoll',
-                'Dev, Admin, FRC Leadership')
-extras.Commands('Events',
-                'Displays events from the team calendar for today '
-                'unless an amount of days is specified',
-                '-events <O: num days>',
-                'None')
-extras.Commands('Channels',
-                'Lists which channels are subscribed to the auto announcements',
-                '-channels',
-                'Dev')
-extras.Commands('Setup', 'Starts the auto announcement system',
-                '-setup',
-                'Dev, Admin, FRC Leadership')
-extras.Commands('Math',
-                "Solves math equations/expressions. "
-                "Use the flag '-v' to specify the variable that you want to solve for",
-                '-math <expression/equation> O: -v <variable to solve for>',
-                'None')
-extras.Commands('Test',
-                'Used to check if bot is running; says "Confirmed." if so',
-                '-test',
-                'None')
-extras.Commands('SetAlarm',
-                "Sets an alarm to happen at the time specified by '-t' (HH:MM, 24 hour clock) and "
-                "pings anything specified by ‘-p’. If you want to ping multiple people use '-p' "
-                "multiple times.\nPlease note that 12am, which would be 24:00, "
-                "is expressed as 00:00",
-                '-setalarm -t <HH:MM> -p <@mention>',
-                'None')
-extras.Commands('Help',
-                "Shows the help page. To learn more about specific commands, do '-help <command>'",
-                '-help <O: command>',
-                'None')
+command_group = extras.CommandGroup(bot)
 
 
 # ------------- Start of commands ------------
 
 
-@bot.command(name='test')
-async def test(ctx):
+@command_group.new_command(name='test', description='Test to see if the bot is on', syntax='-test',
+                           max_args=0)
+async def test(ctx, user_args: List[str]):
     """
     Confirmation that the bot is up and local time
 
-    Permissions needed: None
-
     :param ctx: context object for the message
     :type ctx: Object
+    :param user_args: args passed in by the user
+    :type user_args: List[str]
     """
-    await ctx.channel.send(f"Confirmed."
-                           f"\nLocal time: {datetime.datetime.now().strftime('%H:%M:%S')}")
+    seconds = int((datetime.datetime.now() - START_TIME).total_seconds())
+    await ctx.channel.send(f"Local time: {datetime.datetime.now().strftime('%H:%M')}\n"
+                           f"Uptime: {int(seconds / 60 ** 2)}:{int(seconds / 60) % 60}:{seconds % 60} ")
 
 
-@checks.is_dev()
-@bot.command(name="die")
-async def die(ctx):
+@command_group.new_command(name="Die", description="Kills the bot", syntax="-die", dev_command=True,
+                           max_args=0)
+async def die(ctx, user_args: List[str]):
     """
     Kills bot
 
@@ -93,45 +59,22 @@ async def die(ctx):
     raise SystemExit("Used command '-die'")
 
 
-@checks.is_admin('FRC Leadership')
-@bot.command(name='makepoll')
-async def make_poll(ctx):
+@command_group.new_command(name="makepoll", description="Makes a reaction-role poll",
+                           syntax="-makepoll", max_args=0)
+async def make_poll(ctx, user_args):
     """
     Makes a poll that assigns a role for reacting and a reaction specific role, it can only be ended
     by the author of the poll
 
-    permissions needed: Admin, FRC Leadership
-
     :param ctx: context object for the message
-    :type ctx: Object
+    :type ctx: Context Object
     """
-    try:
-        await ctx.channel.send('Name your poll, then list out the options, one per message, '
-                               'send `done` when you are finished')
-
-        def message_check(m) -> bool:
-            return m.channel == ctx.channel and m.author == ctx.message.author
-
-        msg = await bot.wait_for('message', check=message_check)  # blocking
-
-        action_list = await polls.get_roles(bot, ctx, message_check)
-        poll = polls.Poll([emoji for role, emoji in action_list],
-                          [role for role, emoji in action_list],
-                          msg.author, msg.content)
-        embed, poll = await polls.create_poll_embed(poll)
-        poll.message = await ctx.channel.send(content=None, embed=embed)
-        await poll.add_reactions()
-        await poll.save(bot)
-        await poll.get_compare_reactions()
-    except RuntimeError:
-        return
-
-    except Exception as E:
-        await ctx.channel.send(E)
+    await bot_commands.makepoll(ctx, bot)
 
 
-@bot.command(name='events')
-@checks.get_args_in_message(max_args=1, arg_types=[int])
+@command_group.new_command(name="Events", description='Displays events from the team calendar for '
+                                                      'today unless an amount of days is specified',
+                           syntax="-events <O: num days>", max_args=1, types=int)
 async def events(ctx, user_args: List[Union[int, float, str]]):
     """
     Calls the calendar api and read the calendar and gets the events happening within the amount of
@@ -146,19 +89,17 @@ async def events(ctx, user_args: List[Union[int, float, str]]):
     :type: List[Union[int, float, str]]
     """
     await ctx.channel.trigger_typing()
-    try:
-        if len(user_args) == 1:
-            embed = await event_utils.manage_events(bot, ctx=ctx, days=user_args[0], auto=False)
-        else:  # len(user_args) == 0:
-            embed = await event_utils.manage_events(bot, today=True, auto=False)
-        await ctx.channel.send(embed=embed, content=None)
-    except Exception as eee:  # This is when it sends an error-based message to it can skip back
-        print(eee)
+    if len(user_args) == 1:
+        embed = await event_utils.manage_events(bot, days=user_args[0], auto=False)
+    else:  # len(user_args) == 0:
+        embed = await event_utils.manage_events(bot, today=True, auto=False)
+    await ctx.channel.send(embed=embed)
 
 
-@checks.is_dev()
-@bot.command(name='channels')
-async def channel_test(ctx):
+@command_group.new_command(name="Channels", description='Lists which channels are subscribed to the'
+                                                        ' auto announcements', syntax="-channels",
+                           dev_command=True, max_args=0)
+async def channel_test(ctx, user_args):
     """
     Debugging command, sends a message to every channel written in channels.txt
 
@@ -167,15 +108,12 @@ async def channel_test(ctx):
     :param ctx: context object for the message
     :type ctx: Object
     """
-    try:
-        await admin.channels(bot, ctx)
-    except Exception as ee:
-        await ctx.channel.send(ee)
+    await bot_commands.channels(ctx, bot)
 
 
-@checks.is_admin('FRC Leadership')
-@bot.command(name='setup')
-async def setup(ctx):
+@command_group.new_command(name="setup", description='Starts the auto announcement system',
+                           syntax="-setup", max_args=0, frc_leadership_command=True)
+async def setup(ctx, user_args):
     """
     If the process is successful then it reads the channel id and writes it to channels.txt
 
@@ -184,14 +122,14 @@ async def setup(ctx):
     :param ctx: context object for the message
     :type ctx: Object
     """
-    try:
-        await event_utils.setup(ctx, bot)
-    except Exception as ee:
-        await ctx.channel.send(ee)
+    await event_utils.setup(ctx, bot)
 
 
-@bot.command(name='Math')
-@checks.get_args_in_message(min_args=1, max_args=9999, arg_types=str)
+@command_group.new_command(name='Math', description="Solves math equations/expressions. Use the "
+                                                    "flag '-v' to specify the variable that you "
+                                                    "want to solve for",
+                           syntax='-math <expression/equation> O: [-v <variable to solve for>]',
+                           min_args=1)
 async def math(ctx, user_args: List[str]):
     """
     Solves either a math equation or expression. It can hang if the expression is too complex, e.g.
@@ -202,26 +140,21 @@ async def math(ctx, user_args: List[str]):
     :param ctx: context object for the message
     :type ctx: Object
     :param user_args: args that the user passed in
-    :type: List[Union[int, float, str]]
+    :type: List[str]
     """
-    await ctx.channel.trigger_typing()
-    try:
-        answers, equ = math_main(user_args)
-        math_embed = discord.Embed(
-            title=f"`{equ}`",
-            color=discord.Color.from_rgb(67, 0, 255),
-            description=f"```\n{''.join(answers)}\n```"
-        )
-        await ctx.channel.send(content=None, embed=math_embed)
-    except Exception as e:
-        await ctx.channel.send(f"Well, You did something wrong\n`{e}`")
+    await bot_commands.math(ctx, user_args)
 
 
-@bot.command(name='setalarm')
-@checks.get_args_in_message(min_args=4, max_args=99999, arg_types=str)
+@command_group.new_command(name="SetAlarm",
+                           description="Sets an alarm to happen at the time specified by '-t' "
+                                       "(HH:MM, 24 hour clock) and pings anyone in your message. "
+                                       "You can add an optional message\n"
+                                       "Please note that 12am, which would be 24:00, is "
+                                       "expressed as 00:00",
+                           syntax="-setalarm -t <HH:MM> <O: @mention...> <O: message>", min_args=4)
 async def setalarm(ctx, user_args: List[str]):
     """TODO make this function better
-    Creates and alarm that pings people specified at the time (24hr clock) specified. Currectly only
+    Creates and alarm that pings people specified at the time (24hr clock) specified. Currently only
     works for the
     current day (it can't do any days in advance)
 
@@ -233,62 +166,54 @@ async def setalarm(ctx, user_args: List[str]):
     :type: List[Union[int, float, str]]
     """
     try:
-        static_message_list = user_args
-        pings = ""
-        time = None
-        for i in static_message_list:
-            if i == '-t':
-                index = user_args.index(i) + 1
-                time = user_args[index]
-                user_args[index - 1] = None
-                user_args[index] = None
-            elif i == '-p':
-                index = user_args.index(i) + 1
-                pings += f"{user_args[index]} "
-                user_args[index - 1] = None
-                user_args[index] = None
-        time, pings = await event_utils.check_for_errors(ctx, time, pings)
-        reminder = ""
-        for i in user_args:
-            if i is not None:
-                reminder += f"{i} "
-        bot.loop.create_task(event_utils.alarm(time, reminder, ctx, pings))
-    except Exception as qw:
-        print(qw)
+        t = user_args.index('-t')
+    except IndexError:
+        await extras.command_error(ctx, '505', missing_args='-t')
+        raise
+
+    try:
+        time = datetime.datetime.strptime(user_args[t + 1], "%H:%M").time()
+    except TypeError:
+        await extras.command_error(ctx, '707', extra="'-t' arg must be in format: HH:MM")
+        raise
+    del user_args[t:t+2]
+
+    message = " ".join(user_args)
+
+    pings = " ".join(re.findall(r"<@.*>", message))
+    message = re.sub(r"<@.*>", message, "")
+
+    bot.loop.create_task(event_utils.alarm(time, message, ctx, pings))
 
 
-@bot.command(name='help')
-@checks.get_args_in_message(max_args=1, arg_types=[str])
+@command_group.new_command(name="help", description="Help command", syntax="-help <O: command>",
+                           max_args=1)
 async def helper(ctx, user_args: List[str]):
     """
     Sends the help embed, can also give specific help of a given command
 
-    Permissions needed: None
-
     :param ctx: context object for the message
-    :type ctx: Object
-    :param user_args: args that the user passed in
-    :type: List[Union[int, float, str]]
+    :type ctx: Context Object
+    :param user_args: args passed in by the user
+    :type user_args: List[str]
     """
-    try:
-        await extras.helper(ctx, user_args)
-    except Exception as e:
-        print(e)
+    await extras.helper(ctx, user_args, command_group)
 
 
 @bot.event
 async def on_command_error(ctx, error):
     """
-    called when someone uses the prefix on something that isn't a command
+    Called when someone uses the prefix on something that isn't a command
 
     :param ctx: context object for the message
-    :type ctx: Object
+    :type ctx: Context Object
     :param error: commands.errors.CommandNotFound will lead to an error message being sent
     :type error: Exception
     """
     if isinstance(error, commands.errors.CommandNotFound):
-        await extras.command_error(ctx, '404', 'command not found',
-                                   command=ctx.message.content.split()[0][1:])
+        await extras.command_error(ctx, '404', command=ctx.message.content.split()[0][1:])
+        return
+    raise error
 
 
 # ---------- End of commands -------------
@@ -316,24 +241,36 @@ async def game_presence() -> None:
     It loops forever
     """
     await bot.wait_until_ready()
-    games = ["-help for help", "Official bot of Team 5587", "when you're not looking"]
+    games = ["-help for help", "my banjo"]
     while not bot.is_closed():
         try:
-            status = random.choice(games)
-            await bot.change_presence(activity=discord.Game(status))
-            await asyncio.sleep(10)
-        except Exception as exc:  # I'm too lazy to figure out which one is crashing the bot
-            print(exc)
+            for game in games:
+                await asyncio.sleep(10)
+                await bot.change_presence(activity=discord.Game(game))
+                await asyncio.sleep(10)
+
+        except exceptions.ConnectionClosed as exc:
+            print(f"game_presence Exception: {exc}")
+            print(f"is_closed(): {bot.is_closed()}")
             continue
 
 
-admin.make_cache()
-checks.load_devs_config()
+def run():
+    extras.make_cache()
 
-bot.loop.create_task(event_utils.auto_announcements(bot))
-bot.loop.create_task(game_presence())
-bot.loop.create_task(server_list())
-bot.loop.create_task(polls.Poll.runall(bot))
+    logger = logging.getLogger('discord')
+    logger.setLevel(logging.ERROR)
+    handler = logging.FileHandler(filename='cache/discord.log', encoding='utf-8', mode='w')
+    handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+    logger.addHandler(handler)
+
+    bot.loop.create_task(game_presence())
+    bot.loop.create_task(server_list())
+    bot.loop.create_task(event_utils.auto_announcements(bot))
+    bot.loop.create_task(poll.PollBase.runall(bot))
+
+    bot.run(token)
 
 
-bot.run(token)
+if __name__ == '__main__':
+    run()

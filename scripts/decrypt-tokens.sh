@@ -7,13 +7,16 @@
 token_dir="./tokens"
 
 # --batch to prevent interactive command --yes to assume "yes" for questions
-if [ "$1" = "discord" ]; then
+if [ "$1" = "discord" ]
+then
     gpg --quiet --batch --yes --decrypt --passphrase "$TOKEN_DECRYPT_PASS" \
         --output "$token_dir/discord-token.txt" "$token_dir/discord-token.txt.gpg"
-elif [ "$1" = "calendar" ]; then
+elif [ "$1" = "calendar" ]
+then
     gpg --quiet --batch --yes --decrypt --passphrase "$TOKEN_DECRYPT_PASS" \
         --output "$token_dir/calendar-credentials.json" "$token_dir/calendar-credentials.json.gpg"
-elif [ "$1" = "gtoken" ]; then
+elif [ "$1" = "gtoken" ]
+then
     gpg --quiet --batch --yes --decrypt --passphrase "$TOKEN_DECRYPT_PASS" \
         --output "$token_dir/calendar-token.pickle" "$token_dir/calendar-token.pickle.gpg"
 fi
