@@ -66,36 +66,6 @@ async def alarm(time: datetime.time, content: str, ctx, pings: str):
     await ctx.channel.send(content=None, embed=alarm_embed)
 
 
-# async def get_args(ctx, time: str, pings: str) -> (datetime.time, str):
-#     """
-#     This takes all of the args given by the human on discord and checks them for errors, if there is
-#     and error it calls the command_error method to notify the human what they have messed up, if it
-#     succeeds then this wil take the time str and convert it to a datetime.time object the parent
-#     method continues on normally
-#
-#     :param ctx: context object for the message
-#     :type ctx: Object
-#     :param time: time that will be converted into a datetime object
-#     :type time: str
-#     :param pings: comma separated list of pings
-#     :type pings: str
-#     :return: time of alarm, comma separated list of pings
-#     :rtype: datetime.time, str
-#     """
-#     if time is None:
-#         await extras.command_error(ctx, '505', missing_args='-t')
-#         return
-#     elif pings == "":
-#         await extras.command_error(ctx, '505', missing_args='-p')
-#         return
-#     try:
-#         time = datetime.datetime.strptime(time, "%H:%M").time()
-#     except TypeError:
-#         await extras.command_error(ctx, '707', extra="'-t' arg must be in format: HH:MM")
-#         return
-#     return time, pings
-
-
 def create_event_embed(is_today: bool, num_days: int = None) -> discord.Embed:
     """
     Creates the correct embed depending on the values for is_today and events_exist
@@ -117,9 +87,15 @@ def create_event_embed(is_today: bool, num_days: int = None) -> discord.Embed:
             title="Events Today",
             color=extras.Colors.purple)
     else:
+        unit = "days"
+        unit1 = "tomorrow"
+        if num_days % 7 == 0:
+            num_days //= 7
+            unit = "weeks"
+            unit1 = "this week"
         embed = discord.Embed(
             title=f"Events happening through "
-                  f"{f'the next {num_days} days' if num_days != 1 else 'tomorrow'}",
+                  f"{f'the next {num_days} {unit}' if num_days != 1 else unit1}",
             color=extras.Colors.purple)
     return embed
 
@@ -211,6 +187,8 @@ async def manage_events(bot, today: bool = False, days: int = 14, auto: bool = T
             name=f"**{events[0].start_day} ({events[0].start_date.strftime('%m/%d')})**",
             value="\n".join([event.str() for event in events]),
             inline=False)
+
+    event_embed.set_field_at(0, name="**Today**", value=event_embed.fields[0].value, inline=False)
 
     if not auto:
         return event_embed
